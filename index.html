@@ -1,0 +1,1161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Irrigate: supply water, cultivate tokens, harvest revenue</title>
+<meta name="description" content="Irrigate is a Solana launchpad of autonomous irrigation machine NFTs that water virtual token farms, grow coins on pump.fun and harvest creator fees.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="theme-color" content="#132A1C">
+<meta property="og:title" content="Irrigate: supply water, cultivate tokens, harvest revenue">
+<meta property="og:description" content="Autonomous irrigation machine NFTs that water virtual token farms, grow coins on pump.fun and harvest creator fees.">
+<meta property="og:image" content="/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Nunito+Sans:wght@400;600;700;800&family=Cousine:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+<style>
+:root{
+  --bg:#EEF4EA;--panel:#FFFFFF;--ink:#10241A;--soft:#3C5243;--mute:#6B8170;--rule:#D3E0D3;--edge:#10241A;--frame:#10241A;
+  --cy:#0AA5C2;--cy-ink:#007589;--lime:#4E9A1E;--brown:#7A4E24;--field:#5A4630;
+  --grid:rgba(16,36,26,.045);--stripe:rgba(16,36,26,.035);
+  --f-head:'Bricolage Grotesque','Arial Black',sans-serif;
+  --f-ui:'Nunito Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'Cousine',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#132A1C;--panel:#183424;--ink:#EEF5EC;--soft:#BCD0BE;--mute:#7F9A85;--rule:#244731;--edge:#EEF5EC;--frame:#33603F;
+    --cy:#22D3EE;--cy-ink:#67E8F9;--lime:#9BE34A;--brown:#B07A43;--field:#3E2F20;
+    --grid:rgba(255,255,255,.03);--stripe:rgba(255,255,255,.04);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#132A1C;--panel:#183424;--ink:#EEF5EC;--soft:#BCD0BE;--mute:#7F9A85;--rule:#244731;--edge:#EEF5EC;--frame:#33603F;
+  --cy:#22D3EE;--cy-ink:#67E8F9;--lime:#9BE34A;--brown:#B07A43;--field:#3E2F20;
+  --grid:rgba(255,255,255,.03);--stripe:rgba(255,255,255,.04);color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background-color:var(--bg);color:var(--ink);font:400 15.5px/1.55 var(--f-ui);
+  background-image:repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 26px);-webkit-font-smoothing:antialiased}
+img,svg{max-width:100%}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px dashed var(--cy-ink);outline-offset:3px}
+.wrap{max-width:1420px;margin:0 auto;padding:16px}
+.panel{background:var(--panel);border:1.5px solid var(--frame);border-radius:6px}
+.ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;padding:13px 18px;border-bottom:1px solid var(--rule);font:700 12px/1.2 var(--f-mono);letter-spacing:.05em;text-transform:uppercase}
+.ph small{font-weight:400;color:var(--mute);letter-spacing:.03em}
+.ph .pix{height:18px;width:auto} .ph .irr{width:44px;flex:none}
+.ph .end{margin-left:auto}
+.pad{padding:18px}
+.tag{display:inline-block;font:700 10.5px/1 var(--f-mono);letter-spacing:.04em;padding:5px 7px;background:var(--ink);color:var(--bg);text-transform:uppercase;border-radius:3px}
+.tag.cy{background:var(--cy);color:#04161A}
+.tag.lime{background:var(--lime);color:#0E1A06}
+.tag.ghost{background:transparent;color:var(--soft);border:1px solid var(--rule)}
+.pix rect{fill:var(--ink)} .pix .c{fill:var(--cy)} .pix .l{fill:var(--lime)} .pix .b{fill:var(--brown)}
+.small{font-size:13px;color:var(--soft)}
+.warn{color:#B42318}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .warn{color:#FF9B8C}}
+:root[data-theme="dark"] .warn{color:#FF9B8C}
+.irr{display:block;width:100%;height:auto}
+
+/* header */
+.top{margin-bottom:16px}
+.nav{display:grid;grid-template-columns:auto 1fr auto}
+.brand{display:flex;align-items:center;gap:12px;padding:8px 18px;border-right:1px solid var(--rule);text-decoration:none}
+.brand .irr{width:96px;flex:none}
+.brand b{display:block;font:800 28px/1 var(--f-head);letter-spacing:-.01em}
+.brand small{display:block;margin-top:4px;font:400 11px/1 var(--f-mono);color:var(--mute);letter-spacing:.05em}
+.tabs{display:grid;grid-template-columns:repeat(8,minmax(88px,1fr));overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:15px 8px 12px;border-right:1px solid var(--rule);text-decoration:none;color:var(--soft);font:700 11px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.tabs a em{position:absolute;top:7px;right:8px;font-style:normal;color:var(--mute);font-size:10px}
+.tabs a .pix{height:22px;width:auto}
+.tabs a:hover{background:var(--stripe)}
+.tabs a[aria-current="page"]{color:var(--ink);box-shadow:inset 0 -4px 0 var(--cy)}
+.walletcell{position:relative;display:flex;align-items:center;padding:12px 18px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font:800 14px/1.2 var(--f-ui);border:1.5px solid var(--edge);background:var(--panel);color:var(--ink);padding:12px 16px;cursor:pointer;box-shadow:3px 3px 0 var(--edge);text-decoration:none;white-space:nowrap;border-radius:5px}
+.btn:active:not([disabled]){transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}
+.btn.cy{background:var(--cy);color:#04161A;border-color:#04161A}
+.btn.dark{background:var(--ink);color:var(--bg)}
+.btn.sm{padding:7px 10px;font-size:12.5px;box-shadow:2px 2px 0 var(--edge)}
+.btn.wide{width:100%;padding:19px;font-size:16px}
+.btn[disabled]{opacity:.4;cursor:not-allowed;box-shadow:none}
+.btn .dot{width:9px;height:9px;background:#04161A;display:inline-block;border-radius:50%}
+.btn.connected .dot{background:var(--cy);outline:1.5px solid var(--edge)}
+.chip{font:700 11px/1 var(--f-mono);letter-spacing:.02em;border:1.5px solid var(--edge);background:var(--panel);padding:7px 10px;cursor:pointer;border-radius:4px}
+.chip[aria-pressed="true"]{background:var(--cy);color:#04161A;border-color:#04161A}
+.link{font:800 13px/1 var(--f-ui);border:0;background:none;padding:3px 0;border-bottom:3px solid var(--cy);cursor:pointer;text-decoration:none}
+
+/* farm */
+.grid-hero{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px;align-items:start}
+.col{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-content:start;min-width:0}
+label,.lbl{display:block;font:700 11px/1.2 var(--f-mono);color:var(--soft);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+.big{display:flex;align-items:baseline;gap:10px;margin:14px 0 6px}
+.big b{font:800 96px/.85 var(--f-head);letter-spacing:-.03em}
+.big span{font:700 22px var(--f-head);color:var(--mute)}
+.kv4{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule);margin:14px 0 18px;border-radius:4px}
+.kv4>div{padding:12px 14px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.kv4>div:nth-child(2n){border-right:0}
+.kv4>div:nth-last-child(-n+2){border-bottom:0}
+.kv4 b{font:700 15.5px/1.2 var(--f-mono)}
+.hero-copy{padding:26px 28px 6px}
+h1{font:800 clamp(36px,4.4vw,64px)/.98 var(--f-head);letter-spacing:-.02em;margin:0 0 14px;overflow-wrap:anywhere}
+h1 em{font-style:normal;color:var(--cy-ink)}
+.hero-copy p{font-size:16.5px;color:var(--soft);margin:0;max-width:64ch}
+.farmviz{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:0;margin:18px;border:1.5px solid var(--frame);border-radius:6px;overflow:hidden}
+.farmviz>div{padding:18px}
+.farmviz>div+div{border-left:1px solid var(--rule)}
+.field{display:block;width:100%;max-width:400px;height:auto;margin:0 auto}
+.field .arm{transform-origin:110px 110px;animation:pivot 22s linear infinite}
+@keyframes pivot{to{transform:rotate(360deg)}}
+.field path.p{stroke:var(--panel);stroke-width:.8;cursor:help}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font:400 12px var(--f-mono);color:var(--soft);justify-content:center}
+.legend i{width:11px;height:11px;display:inline-block;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.sim h3{margin:0 0 2px;font:800 30px/1 var(--f-head)}
+.sim .sub{font:400 12px var(--f-mono);color:var(--mute);margin:0 0 14px}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 16px}
+.stages div{border:1.5px solid var(--rule);border-radius:4px;padding:8px 6px;text-align:center;font:700 11px var(--f-mono);color:var(--mute)}
+.stages div.on{border-color:var(--lime);color:var(--ink);background:color-mix(in srgb,var(--lime) 16%,transparent)}
+.stages .pix{height:16px;width:auto;display:block;margin:0 auto 6px}
+.wbar{height:16px;border:1.5px solid var(--edge);border-radius:4px;position:relative;overflow:hidden;margin:6px 0 4px;background:linear-gradient(90deg,color-mix(in srgb,var(--brown) 30%,transparent),transparent)}
+.wbar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,var(--cy) 0 6px,color-mix(in srgb,var(--cy) 70%,transparent) 6px 8px)}
+.wscale{display:flex;justify-content:space-between;font:400 11px var(--f-mono);color:var(--mute)}
+.simnote{font-size:12.5px;color:var(--mute);margin:14px 0 0}
+.cycle{display:grid;grid-template-columns:repeat(4,1fr);margin:0 18px 18px;border:1.5px solid var(--frame);border-radius:6px}
+.cycle>div{padding:14px 16px;border-right:1px solid var(--rule);position:relative}
+.cycle>div:last-child{border-right:0}
+.cycle b{display:block;font:800 26px/1 var(--f-head);margin:4px 0}
+.cycle span{font-size:13px;color:var(--soft)}
+.cycle>div:not(:last-child)::after{content:"→";position:absolute;right:-10px;top:50%;transform:translateY(-50%);background:var(--panel);font:700 15px var(--f-mono);z-index:1}
+.kv2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.kv2>div{padding:14px 18px}
+.kv2>div+div{border-left:1px solid var(--rule)}
+.kv2 b{font:800 22px/1.1 var(--f-head);overflow-wrap:anywhere}
+.btnrow{display:flex;gap:12px;padding:18px;border-top:1px solid var(--rule)}
+.btnrow .btn{flex:1}
+.feed{display:grid;grid-template-columns:repeat(6,1fr)}
+.feed>div{padding:18px 14px;text-align:center;border-right:1px solid var(--rule)}
+.feed>div:last-child{border-right:0}
+.feed .pix{height:26px;width:auto;margin:0 auto 8px;display:block}
+.feed b{display:block;font:800 19px var(--f-head)}
+.feed p{margin:2px 0 6px;font-size:13px;color:var(--soft);line-height:1.35}
+.ago{font:400 11px var(--f-mono);color:var(--mute);letter-spacing:.03em;text-transform:uppercase}
+.empty{padding:28px 20px;color:var(--soft);display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.empty .irr{width:90px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr)}
+.steps>div{padding:20px 18px 24px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.steps>div:nth-child(3n){border-right:0}
+.steps>div:nth-last-child(-n+3){border-bottom:0}
+.steps .pix{height:26px;width:auto;margin-bottom:12px} .steps .irr{width:76px;margin-bottom:12px}
+.steps .n{display:block;font:700 12px var(--f-mono);color:var(--cy-ink);margin-bottom:6px}
+.steps h3{margin:0 0 6px;font:800 21px/1.1 var(--f-head)}
+.steps p{margin:0;color:var(--soft);font-size:14.5px}
+.mt{margin-top:16px}
+
+/* deploy */
+.grid-2{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start}
+.step h3{font:800 30px/1.05 var(--f-head);margin:0 0 8px}
+.step p{margin:0 0 16px;color:var(--soft);max-width:68ch}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.opt{text-align:left;border:1.5px solid var(--edge);background:var(--panel);padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:4px;border-radius:5px}
+.opt[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--cy),4px 4px 0 var(--edge)}
+.opt b{font:800 17px/1.1 var(--f-head);margin-top:6px}
+.opt>span{color:var(--soft);font-size:13px}
+.opt dl{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;margin:10px 0 0;font:400 11.5px var(--f-mono)}
+.opt dt{color:var(--mute)} .opt dd{margin:0;text-align:right}
+.drops{display:flex;gap:3px;height:14px;align-items:flex-end}
+.drops i{width:7px;height:10px;background:var(--cy);border-radius:50% 50% 50% 50% / 30% 30% 70% 70%}
+.note{font-size:13.5px;color:var(--soft);margin:14px 0 0;padding-left:12px;border-left:3px solid var(--cy)}
+.youget{display:flex;gap:18px;align-items:center;padding:18px}
+.youget .irr{width:160px;flex:none}
+.youget b{display:block;font:800 34px/1 var(--f-head)}
+.youget span{color:var(--soft);font-size:14px}
+.rows>div{display:flex;justify-content:space-between;gap:16px;align-items:baseline;padding:14px 18px;border-bottom:1px solid var(--rule)}
+.rows>div:last-child{border-bottom:0}
+.rows label{margin:0}
+.rows b{font:700 14px var(--f-mono);text-align:right}
+
+/* my farms */
+.kv5{display:grid;grid-template-columns:repeat(5,1fr)}
+.kv5>div{padding:16px 18px;border-right:1px solid var(--rule)}
+.kv5>div:last-child{border-right:0}
+.kv5 b{display:block;font:700 19px/1.2 var(--f-mono)}
+.kv5 b.g{color:var(--cy-ink)}
+.actions{display:flex;flex-wrap:wrap;gap:12px;padding:18px;border-top:1px solid var(--rule)}
+.frow{border-top:1px solid var(--rule)}
+.frow:first-of-type{border-top:0}
+.fhead{display:grid;grid-template-columns:170px minmax(0,1fr) minmax(0,1.1fr)}
+.fhead>div{padding:18px}
+.fhead>div+div{border-left:1px solid var(--rule)}
+.fhead h3{margin:0 0 8px;font:800 28px/1 var(--f-head);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin:10px 0 14px}
+.stats b{display:block;font:700 14px var(--f-mono)}
+.tankbar{height:12px;border:1.5px solid var(--edge);border-radius:4px;position:relative;overflow:hidden;margin:4px 0 2px}
+.tankbar i{position:absolute;inset:0 auto 0 0;background:var(--cy)}
+.plots{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));border-top:1px solid var(--rule)}
+.plot{padding:14px 16px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:6px}
+.plot .ptop{display:flex;align-items:center;gap:10px}
+.plot .ptop .pix{height:22px;width:auto}
+.plot b{font:800 16px var(--f-head)}
+.plot small{font-size:12px;color:var(--soft)}
+.plot.dorm{background:repeating-linear-gradient(-45deg,transparent 0 8px,color-mix(in srgb,var(--brown) 12%,transparent) 8px 10px)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.up{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--rule)}
+.up:last-child{border-bottom:0}
+.up b{font:800 14.5px var(--f-ui)}
+.up small{grid-column:1;font-size:12.5px;color:var(--soft)}
+.up .btn,.up .seg{grid-row:1 / span 2;grid-column:2}
+.pips{display:inline-flex;gap:3px;margin-left:8px;vertical-align:1px}
+.pips i{width:9px;height:9px;border:1px solid var(--edge);display:inline-block;border-radius:2px}
+.pips i.on{background:var(--cy)}
+.rentbox{border:1px solid var(--rule);padding:12px 14px;margin-bottom:10px;background:var(--stripe);border-radius:4px}
+.rentbox b{display:block;font:800 14.5px var(--f-ui);margin-bottom:2px}
+.rentbox p{margin:0 0 10px;font-size:13px;color:var(--soft)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.seg>span{font:700 11px var(--f-mono);color:var(--mute);letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
+.filters{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding:16px 18px}
+
+/* market / nets / rentals */
+.ex{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+.ex>div{padding:20px}
+.ex>div+div{border-left:1px solid var(--rule)}
+.spot b{display:block;font:800 60px/1 var(--f-head)}
+.spot span{font:400 13px var(--f-mono);color:var(--soft)}
+.spark{display:block;width:100%;height:80px;margin-top:14px}
+.spark .ln{fill:none;stroke:var(--cy);stroke-width:2;vector-effect:non-scaling-stroke}
+.spark .ar{fill:var(--cy);opacity:.12}
+.nets{display:grid;grid-template-columns:repeat(3,1fr)}
+.net{padding:18px;border-right:1px solid var(--rule)}
+.net:last-child{border-right:0}
+.net h3{margin:0 0 4px;font:800 24px/1 var(--f-head)}
+.net dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:8px 0 0;font:400 12px var(--f-mono)}
+.net dt{color:var(--mute)} .net dd{margin:0;text-align:right}
+.lists{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.lcard{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;padding:16px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.lcard .irr{width:120px}
+.lcard h4{margin:0 0 6px;font:800 24px/1 var(--f-head);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lcard dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0 0 12px;font:400 11.5px var(--f-mono)}
+.lcard dt{color:var(--mute)} .lcard dd{margin:0;text-align:right}
+.lcard .btn{width:100%;white-space:normal;text-align:center}
+
+/* how */
+.split{padding:22px 22px 6px}
+.squares{display:grid;grid-template-columns:repeat(50,1fr);gap:2px}
+.squares i{aspect-ratio:1;display:block;border-radius:1px}
+.sq-a{background:var(--cy)} .sq-b{background:var(--ink)} .sq-c{background:var(--mute);opacity:.5}
+.splitkeys{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);margin-top:18px}
+.splitkeys>div{padding:16px 22px;border-right:1px solid var(--rule)}
+.splitkeys>div:last-child{border-right:0}
+.splitkeys .k{display:flex;gap:8px;align-items:center;font:800 15px var(--f-ui)}
+.splitkeys .k i{width:13px;height:13px;display:inline-block;border-radius:2px}
+.splitkeys b{display:block;font:800 52px/1 var(--f-head);margin:8px 0 4px}
+.splitkeys p{margin:0;color:var(--soft);font-size:14px}
+.flyline{display:flex;flex-wrap:wrap;gap:8px;padding:18px 22px;align-items:center}
+.flyline span{border:1.5px solid var(--edge);padding:8px 12px;font:700 14px var(--f-ui);border-radius:4px}
+.flyline span.hot{background:var(--cy);color:#04161A}
+.flyline i{font-style:normal;color:var(--mute);font-family:var(--f-mono)}
+.pbody{padding:18px 22px}
+.pbody p{margin:0 0 10px;color:var(--soft)}
+.pbody p:last-child{margin:0}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{font:700 11px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--soft);text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--stripe)}
+td{padding:12px 14px;border-bottom:1px solid var(--rule);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right;font-family:var(--f-mono)}
+.tw{overflow-x:auto}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+
+/* docs */
+.docs{display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;align-items:start}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.toc ol{list-style:none;margin:0;padding:8px 18px 14px}
+.toc li button{display:flex;gap:14px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);padding:10px 0;cursor:pointer;font-size:14.5px}
+.toc li button span{font:400 11px var(--f-mono);color:var(--mute);padding-top:3px}
+.doc{scroll-margin-top:16px}
+.doc .body{padding:20px 24px 24px;max-width:80ch}
+.doc .body p,.doc .body li{color:var(--soft)}
+.doc .body strong{color:var(--ink)}
+.doc .body h4{font:800 18px var(--f-head);margin:20px 0 6px}
+.doc code{font:400 12.5px var(--f-mono);background:var(--stripe);padding:2px 5px}
+.doc .tw{margin:12px 0;border:1px solid var(--rule)}
+details{border-bottom:1px solid var(--rule)}
+details summary{cursor:pointer;padding:13px 0;font-weight:800;list-style:none}
+details summary::before{content:"▸";display:inline-block;width:18px;font-size:12px}
+details[open] summary::before{content:"▾"}
+details p{margin:0 0 14px 18px}
+
+/* overlays */
+.scrim{position:fixed;inset:0;background:rgba(6,16,10,.65);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{max-width:640px;width:100%;max-height:calc(100% - 32px);overflow:auto;box-shadow:6px 6px 0 var(--cy)}
+.x{margin-left:auto;background:none;border:0;font:700 18px var(--f-mono);cursor:pointer;padding:0 4px}
+.wlist{display:grid;gap:10px;padding:18px}
+.wopt{display:flex;align-items:center;gap:14px;border:1.5px solid var(--edge);background:var(--panel);padding:12px 14px;cursor:pointer;text-align:left;font:800 15px var(--f-ui);text-decoration:none;border-radius:5px}
+.wopt img,.wopt .ph-ico{width:28px;height:28px;flex:none;border-radius:4px}
+.wopt .ph-ico{background:var(--mute)}
+.wopt em{margin-left:auto;font:700 11px var(--f-mono);font-style:normal;color:var(--cy-ink);text-transform:uppercase;letter-spacing:.04em}
+.wopt:hover{background:var(--stripe)}
+.menu{position:absolute;right:18px;top:calc(100% - 4px);z-index:40;min-width:260px;box-shadow:4px 4px 0 var(--cy)}
+.menu .rows>div{padding:12px 16px}
+.mitems{display:grid;border-top:1px solid var(--rule)}
+.mitems button,.mitems a{text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);padding:12px 16px;cursor:pointer;font:700 14px var(--f-ui);text-decoration:none}
+.mitems>*:last-child{border-bottom:0}
+.toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;z-index:60;max-width:min(380px,calc(100% - 32px))}
+.toast{background:var(--ink);color:var(--bg);padding:12px 16px;font:700 14px var(--f-ui);box-shadow:4px 4px 0 var(--cy);border-radius:5px}
+footer{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;padding:22px 2px 36px;font-size:13px;color:var(--soft)}
+
+@media (max-width:1200px){
+  .grid-hero{grid-template-columns:minmax(0,1fr)}
+  .grid-hero>.hero{order:-1}
+  .grid-2{grid-template-columns:minmax(0,1fr)}
+  .opts{grid-template-columns:repeat(3,1fr)}
+  .feed{grid-template-columns:repeat(3,1fr)}
+  .feed>div:nth-child(3n){border-right:0}
+  .feed>div:nth-child(-n+3){border-bottom:1px solid var(--rule)}
+  .docs{grid-template-columns:minmax(0,1fr)}
+  .toc{position:static}
+  .kv5{grid-template-columns:repeat(3,1fr)}
+  .kv5>div:nth-child(3){border-right:0}
+  .kv5>div:nth-child(-n+3){border-bottom:1px solid var(--rule)}
+  .fhead{grid-template-columns:140px minmax(0,1fr)}
+  .fhead>div:last-child{grid-column:1 / -1;border-left:0;border-top:1px solid var(--rule)}
+}
+@media (max-width:1100px){
+  .nav{grid-template-columns:1fr auto}
+  .brand{border-right:0}
+  .tabs{grid-column:1 / -1;grid-row:2;display:flex;border-top:1px solid var(--rule)}
+  .tabs a{flex:1 0 92px}
+}
+@media (max-width:760px){
+  .hero-copy{padding:24px 20px 6px}
+  .farmviz{grid-template-columns:minmax(0,1fr);margin:12px}
+  .farmviz>div+div{border-left:0;border-top:1px solid var(--rule)}
+  .cycle{grid-template-columns:1fr 1fr;margin:0 12px 12px}
+  .cycle>div{border-bottom:1px solid var(--rule)}
+  .cycle>div::after{display:none}
+  .ex{grid-template-columns:minmax(0,1fr)}
+  .ex>div+div{border-left:0;border-top:1px solid var(--rule)}
+  .steps{grid-template-columns:minmax(0,1fr)}
+  .steps>div{border-right:0!important;border-bottom:1px solid var(--rule)!important}
+  .nets{grid-template-columns:minmax(0,1fr)}
+  .net{border-right:0;border-bottom:1px solid var(--rule)}
+}
+@media (max-width:700px){
+  .wrap{padding:10px}
+  .two,.opts{grid-template-columns:minmax(0,1fr)}
+  .feed{grid-template-columns:1fr 1fr}
+  .feed>div{border-bottom:1px solid var(--rule)}
+  .feed>div:nth-child(2n){border-right:0}
+  .feed>div:nth-child(3n){border-right:1px solid var(--rule)}
+  .feed>div:nth-child(6n){border-right:0}
+  .kv5{grid-template-columns:1fr 1fr}
+  .kv5>div{border-right:1px solid var(--rule)!important;border-bottom:1px solid var(--rule)}
+  .kv5>div:nth-child(2n){border-right:0!important}
+  .splitkeys{grid-template-columns:1fr}
+  .splitkeys>div{border-right:0;border-bottom:1px solid var(--rule)}
+  .squares{grid-template-columns:repeat(25,1fr)}
+  .big b{font-size:72px}
+  .brand{padding:8px 12px;gap:8px}
+  .brand .irr{width:62px}
+  .brand b{font-size:21px}
+  .walletcell{padding:10px 12px}
+  .walletcell .btn{padding:9px 10px;font-size:12.5px;gap:7px}
+  .fhead{grid-template-columns:minmax(0,1fr)}
+  .fhead>div+div{border-left:0;border-top:1px solid var(--rule)}
+  .fhead .irr{max-width:170px}
+  .lists{grid-template-columns:minmax(0,1fr)}
+  .lcard{grid-template-columns:90px minmax(0,1fr)}
+  .lcard .irr{width:90px}
+  .up{grid-template-columns:minmax(0,1fr)}
+  .up .btn,.up .seg{grid-row:auto;grid-column:1;justify-self:start;margin-top:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  .field .arm{animation:none}
+  .btn:active:not([disabled]){transform:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="sprites"></defs></svg>
+
+<div class="wrap">
+  <header class="top panel">
+    <div class="nav">
+      <a class="brand" href="#farm" aria-label="Irrigate home">
+        <svg class="irr" viewBox="0 0 90 34" shape-rendering="crispEdges" aria-hidden="true"><use href="#ir"/></svg>
+        <span><b>Irrigate</b><small>$IRRIGATE</small></span>
+      </a>
+      <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+      <div class="walletcell">
+        <button class="btn cy" id="walletBtn" data-act="wallet" aria-haspopup="true"><i class="dot"></i><span>Connect wallet</span></button>
+        <div class="menu panel" id="walletMenu" hidden></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="view" tabindex="-1"></main>
+
+  <footer>
+    <span>Irrigate. Supply water. Cultivate tokens. Harvest revenue.</span>
+    <span>Water is an in-game resource. Revenue and buybacks depend on actual trading activity and protocol income.</span>
+  </footer>
+</div>
+
+<div id="overlay"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ---------- logo pixel grid ---------- */
+const IRR = ["........................kkkkk.............................................................", ".......................kwwwwwk............................................................", ".......................kgkkkwk.k..........................................................", "....................kkkkLLLkwk.kkk........................................................", "....................kwwkgk.kskkk.kk.......................................................", "...................kkkkkkkkkkkwwwkkkkkkkk.................................................", "..................kwkwwwwkwwwwkkksswwwwwwwwwkkkkkkkk......................................", "..................kwksswwkwkwwk....kkwkkkkkkwwwwwwwwwkkkkkkkkk............................", "..................kskggggkwkswk....kwk.kwk..k.kkwkkkskkswwwwwwkkkkkk......................", "...................kkkkkkkwkkksk.kwk....kwk.k.kwk....wk.kkwkkkwwwwwwwwkkkkkkkk......kk....", "....................kggk.kskkkkswskkkkkkkkkwkwgkkkkkkkkwkwkkkkkkkkkkwkgwkkwwwwkwwwwkwwkc..", "....................kwk..kswk..kwssssssssssswsssssssssssswsssssssssswsssssssssskwwwkwwkck.", "...................kwsk..kkwk...kkkkkk....kkwkkkkk....k.kkk.kkkkkkkkwkkk...kkkkkkkkksskck.", "...................ksssssswswk..kk.........kwk..........kk.........kwk........wk....kkk...", "..................kwskgkkswkwk..kk.........kwwk........kswk........sww.......kwwk.........", "..................kwk..kwk.kswk.kk.........kkk.........kkkk........kkk.......kkk..........", ".................kwk..kwks.kkwk.kk.........Ckk..........kk.........kkk........kk..........", ".................kwkkkwkkkkkkwwkkk.......C.CwCc.......C.ww.c......CCwCC......CCCc.........", "................kwwwwwwwwwswwswkkk.....c..c.C..c.....c...c.c.....c.cCc.c....c.cc.C........", ".........kkk...kkwkkkkkkkkkkkkskkkk........c..c.c......c..c.c................c..c.c.......", "........ksswgk.kwkskk......kkkkkskwkk...c.cc.c.c..c...c.c....cc...c...c..cc..c..c..c......", "......kkgggkwsksgkkk........kkgggggwsk.c..........c..c........c..c..c..c..c.c....c........", "......kggkkgskkgkkkkkkkkkkkkkkgkkgkgwk...c.c.c..c.......c...............c..c.........c....", ".....kggkLkggwwkgswwwwwwwwwskggkkgggwwk.........c...........c...c...c.............c.......", ".....kggLLkgkwwkkkkkkkkkkkkkkgkL.kggwwk.c.c...c..c..c...c...c..c.......c....c..........c..", ".....kggwk.gksskk...........kggL.kggssk..............c.......c...............c............", ".....kkgkkkkkggk............kggkkkkkggk.....c.............c.......c.....................c.", "Lw.L..kggggkgsk..L.LL..Ls.L..kggggkgsk.Ls.sL..Ls.Ls...L.sL...w.LL...L.sL...L.LL...L.LL....", "..L...kkkkkkskk...L......L...kkkkkgskk...L......L......L......L......L......L......LL.....", ".kLk...kkkLLkk....Lkk...kLk...kkLLkkk...kLk.....Lkk...kLk....kLk....kLk....kLk....kLk.....", "BBBBLLBBLLLLBBBLBBBBBLLBBBBLLBBLLLLB.BLBBBBBLLBBBBBLLBBBBBLLBBBBBLLBBBBBLBLBBBBLLBBBBBLBBB", "BBbBBbbbBBBbbBBbkBBBbbBBbbBBbbbBBBbbBbBbbBBbbBBbbBbBBbbBBBkBbbBBbbbBBBbbBBBbBBbBBbBBBBbBb.", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.", ".........................................................................................."];
+
+/* ---------- config ---------- */
+const DAY = 86400, HOUR = 3600;
+const CFG = {
+  RPC: 'https://api.mainnet-beta.solana.com', // swap for your own RPC (Helius, Triton…) when you deploy
+  X: 'https://x.com/IrrigateLive',
+  SUPPLY: 1000, MINT0: 0.25, MINT1: 1.25,
+  OPER: 0.60, BURN: 0.25, OPS: 0.15,
+  RENT_OWNER: 0.90, RENT_BURN: 0.10, EX_SPREAD: 0.02,
+  PLANT_W: 100, FEE_TO_W: 1500, NET_SHARE: 0.2, DRAIN_H: 12, AUTO_AT: 40,
+  PRICE0: 0.0000012, TOKEN_SUPPLY: 1e9,
+  START_T: 2 * DAY + 9 * HOUR,
+  OTHER_RATE: 4 / 1440
+};
+const TIERS = [
+  { name: 'Sprinkler', plots: 1, gen: 22, store: 300, unlock: 0, eff: 1, auto: false, cap: 'Waters one token crop' },
+  { name: 'Drip Irrigator', plots: 3, gen: 40, store: 700, unlock: 30000, eff: 0.8, auto: false, cap: 'Distributes water efficiently across multiple crops' },
+  { name: 'Center Pivot', plots: 5, gen: 70, store: 1200, unlock: 80000, eff: 0.9, auto: true, cap: 'Automates irrigation across large token farms' },
+  { name: 'Industrial Irrigator', plots: 8, gen: 110, store: 2000, unlock: 160000, eff: 0.9, auto: true, cap: 'Operates multiple farms simultaneously' },
+  { name: 'Reservoir Network', plots: 6, gen: 90, store: 4000, unlock: 220000, eff: 0.85, auto: true, cap: 'Stores and distributes water between farms' }
+];
+const NETS = [{ id: 1, name: 'North Canal' }, { id: 2, name: 'River Bend' }, { id: 3, name: 'Stone Creek' }];
+const UP = {
+  pump: { name: 'Pump', max: 5, cost: l => 5000 * l, eff: '+20% water generation per level' },
+  tank: { name: 'Water tank', max: 5, cost: l => 5000 * l, eff: '+50% storage per level' }
+};
+const DURS = [{ h: 1, name: '1 hour', off: 0 }, { h: 24, name: '1 day', off: 0.10 }, { h: 168, name: '1 week', off: 0.25 }];
+const NARR = { a: ['Capybara','Frog','Goose','Hamster','Penguin','Raccoon','Otter','Pigeon','Axolotl','Walrus','Sprout','Turnip','Melon','Barley','Clover','Radish','Pumpkin','Corn','Mango','Wheat'], b: ['Council','Summer','Club','Rally','Farm','Field','Patch','Acre','Crop','Seed','Grove','Ranch','Barn','Harvest','Bloom','Root','Row','Union','Crew','Coop'] };
+
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function mulberry(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r = Math.random){ let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+const pick = (arr, r = Math.random) => arr[Math.floor(r() * arr.length)];
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const fmtSol = x => { x = +x || 0; return x >= 100 ? x.toFixed(1) : x >= 1 ? x.toFixed(2) : x >= 0.01 ? x.toFixed(3) : x > 0 ? x.toFixed(4) : '0'; };
+const fmtTok = x => { x = +x || 0; if (x >= 1e9) return (x/1e9).toFixed(2) + 'B'; if (x >= 1e6) return (x/1e6).toFixed(x >= 1e7 ? 1 : 2) + 'M'; if (x >= 1e3) return (x/1e3).toFixed(x >= 1e4 ? 0 : 1) + 'k'; return Math.round(x) + ''; };
+const fmtW = x => Math.floor(+x || 0).toLocaleString('en-US') + ' W';
+const pad2 = n => String(n).padStart(2, '0');
+function ago(t){ const s = S.t - t; if (s < 60) return 'just now'; if (s < HOUR) return Math.floor(s / 60) + ' min ago'; if (s < DAY) return `${Math.floor(s / HOUR)} h ${Math.floor(s % HOUR / 60)} min ago`; return Math.floor(s / DAY) + ' d ago'; }
+function left(t){ const s = Math.max(0, t - S.t); if (s < HOUR) return Math.max(1, Math.ceil(s / 60)) + ' min'; if (s < DAY) return `${Math.floor(s / HOUR)} h ${Math.floor(s % HOUR / 60)} min`; return `${Math.floor(s / DAY)} d ${Math.floor(s % DAY / HOUR)} h`; }
+const short = a => a ? a.slice(0, 4) + '…' + a.slice(-4) : '';
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const randAddr = r => Array.from({ length: 44 }, () => B58[Math.floor(r() * 58)]).join('');
+const mintPrice = n => CFG.MINT0 + (CFG.MINT1 - CFG.MINT0) * (Math.min(n, CFG.SUPPLY) - 1) / (CFG.SUPPLY - 1);
+const price = () => CFG.PRICE0 * (1 + S.burned / CFG.TOKEN_SUPPLY * 40);
+const r50 = x => Math.max(50, Math.round(x / 50) * 50);
+const plotsOf = e => TIERS[e.tier].plots;
+const storeOf = e => TIERS[e.tier].store * (1 + 0.5 * (e.tank - 1));
+const genOf = e => TIERS[e.tier].gen * (1 + 0.2 * (e.pump - 1));
+const stageOf = c => { const h = c.age / 60; return !c.alive ? 'Harvested' : h < 1 ? 'Seed' : h < 4 ? 'Sprout' : h < 12 ? 'Growing' : 'Mature'; };
+
+/* ---------- sprites ---------- */
+(function(){
+  const pal = { k: '#191919', w: '#EEEEEC', s: '#B9BAB8', g: '#6E706E', c: '#1ECDE1', C: '#96EBF5', L: '#AAE83C', B: '#7D4E26', b: '#55341A' };
+  let r = ''; IRR.forEach((row, y) => { let x = 0; while (x < row.length) { const ch = row[x]; if (pal[ch]) { const s = x; while (x < row.length && row[x] === ch) x++; r += `<rect x="${s}" y="${y}" width="${x - s}" height="1" fill="${pal[ch]}"/>`; } else x++; } });
+  document.getElementById('sprites').innerHTML = `<g id="ir">${r}</g>`;
+})();
+const irrSVG = (extra = '') => `<svg class="irr" viewBox="0 0 90 34" shape-rendering="crispEdges" role="img" aria-label="Irrigation machine"><use href="#ir"/>${extra}</svg>`;
+function irrArt(e){ let extra = ''; for (let i = 0; i < 5; i++) extra += `<rect x="${62 + i * 5}" y="1" width="4" height="2" fill="${i <= e.tier ? '#1ECDE1' : '#244731'}"/>`; return irrSVG(extra); }
+function pix(rows){
+  const h = rows.length, w = Math.max(...rows.map(r => r.length)); let r = '';
+  rows.forEach((row, y) => [...row].forEach((c, x) => { if (c === '#') r += `<rect x="${x}" y="${y}" width="1" height="1"/>`; else if (c === 'c') r += `<rect class="c" x="${x}" y="${y}" width="1" height="1"/>`; else if (c === 'l') r += `<rect class="l" x="${x}" y="${y}" width="1" height="1"/>`; else if (c === 'b') r += `<rect class="b" x="${x}" y="${y}" width="1" height="1"/>`; }));
+  return `<svg class="pix" viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+}
+const STG = {
+  Seed: pix(['.......','.......','.......','...l...','bbbbbbb']),
+  Sprout: pix(['.......','..l.l..','...l...','...l...','bbbbbbb']),
+  Growing: pix(['.l...l.','..l.l..','.l.l.l.','...l...','bbbbbbb']),
+  Mature: pix(['l.l.l.l','.lllll.','l.lll.l','...l...','bbbbbbb']),
+  Harvested: pix(['.......','.......','..b.b..','...b...','bbbbbbb'])
+};
+const ICO = {
+  farm: pix(['..#####..','.#lllll#.','#lll#lll#','#ll###ll#','#lll#lll#','.#lllll#.','..#####..']),
+  deploy: pix(['...c...','..ccc..','.ccccc.','..ccc..','.#####.','.#...#.']),
+  mine: pix(['.#######.','#.......#','#....####','#....#c##','#....####','#.......#','.#######.']),
+  water: pix(['...c...','..ccc..','.ccccc.','ccccccc','ccccccc','.ccccc.','..ccc..']),
+  net: pix(['c...c...c','#...#...#','#########','#...c...#','#########','#...#...#']),
+  rent: pix(['.###.....','#...#....','#.c.#####','#...#.#.#','.###.....']),
+  how: pix(['###...###','#c##.##c#','#..#.#..#','#.##.##.#','#..#.#..#','###.#.###']),
+  docs: pix(['######..','#....##.','#.cc..##','#......#','#.####.#','#......#','#.####.#','########']),
+  coin: pix(['..###..','.#ccc#.','#cc#cc#','#c###c#','#cc#cc#','.#ccc#.','..###..']),
+  sprout: STG.Growing
+};
+
+/* ---------- state ---------- */
+const KEY = 'irrigate-state-v1', KEYW = 'irrigate-wallet-v1';
+let S, eById = new Map();
+function reindex(){ eById = new Map(S.irr.map(e => [e.id, e])); }
+function feedPush(x){ x.t = S.t; S.feed.unshift(x); if (S.feed.length > 60) S.feed.length = 60; }
+const hourly = e => e.rv / Math.max(6, Math.min(168, (S.t - e.t) / HOUR));
+const fair = (e, share) => r50(0.75 * share * Math.max(hourly(e), 0.0015 * plotsOf(e)) / price());
+const opIsUser = e => e.rent ? e.rent.user : e.user;
+const cropsOf = e => S.coins.filter(c => c.irr === e.id && c.alive);
+const autoOn = e => opIsUser(e) ? TIERS[e.tier].auto && e.autoOn !== false : true;
+
+function addOther(r){
+  const n = S.irr.length + 1; if (n > CFG.SUPPLY) return;
+  const fee = mintPrice(n), x = r(), tier = x < 0.4 ? 0 : x < 0.68 ? 1 : x < 0.87 ? 2 : x < 0.96 ? 3 : 4;
+  const e = { id: n, owner: randAddr(r), user: false, tier, pump: 1 + Math.floor(r() * r() * 4), tank: 1 + Math.floor(r() * r() * 4), net: r() < 0.6 ? 1 + Math.floor(r() * 3) : null,
+    water: r() * 200, live: 0, count: 0, unclaimed: 0, rentUn: 0, own: 0, rv: 0, list: null, rent: null, t: S.t };
+  if (r() < 0.1) e.list = { share: pick([0.5, 0.6, 0.7, 0.8], r), k: 0.8 + r() * 0.6, price: 0 };
+  S.burnSol += fee * 0.5; S.burned += fee * 0.5 / price() + TIERS[tier].unlock; S.ops += fee * 0.5;
+  S.irr.push(e); eById.set(e.id, e);
+  if (e.list) e.list.price = r50(fair(e, e.list.share) * e.list.k);
+}
+function plant(e){
+  if (e.water < CFG.PLANT_W || e.live >= plotsOf(e)) return false;
+  e.water -= CFG.PLANT_W; S.wUsed += CFG.PLANT_W;
+  const a = pick(NARR.a), b = pick(NARR.b);
+  const c = { id: S.nextCoin++, irr: e.id, tick: (a.slice(0, 4) + b.slice(0, 1 + Math.floor(Math.random() * 3))).toUpperCase(), t0: S.t, age: 0, w: 100, F: Math.exp(Math.log(0.08) + 1.3 * gauss()), L: Math.exp(Math.log(120) + 0.9 * gauss()), fees: 0, alive: true, grad: false };
+  c.gradAt = c.F > 5 ? c.F * 0.3 : -1;
+  S.coins.push(c); e.live++; e.count++; S.launches++;
+  feedPush({ k: 'plant', irr: e.id, tick: c.tick }); S.ver++;
+  if (opIsUser(e) && S.speed <= 60) toast(`Irrigator #${e.id} planted $${c.tick} with ${CFG.PLANT_W} W`);
+  return true;
+}
+function waterCrop(e, c){ const need = (100 - c.w) * TIERS[e.tier].eff; if (need <= 0 || e.water < need) return false; e.water -= need; S.wUsed += need; c.w = 100; return true; }
+function pay(c, fee){
+  c.fees += fee;
+  S.burnSol += fee * CFG.BURN; S.burned += fee * CFG.BURN / price(); S.ops += fee * CFG.OPS; S.fee24 += fee;
+  const e = eById.get(c.irr); if (!e) return;
+  const op = fee * CFG.OPER, renter = e.rent ? op * e.rent.share : 0;
+  e.rentUn += renter; e.unclaimed += op - renter; e.own += op - renter; e.rv += op;
+  const gw = fee * CFG.FEE_TO_W; S.wGen += gw; addWater(e, gw);
+}
+function addWater(e, w){
+  let add = w;
+  if (e.net) { const ns = add * CFG.NET_SHARE; add -= ns; S.nets[e.net - 1].pool += ns; S.nets[e.net - 1].contrib += ns; e.netC = (e.netC || 0) + ns; }
+  const room = storeOf(e) - e.water;
+  if (add > room) { if (e.net) S.nets[e.net - 1].pool += add - room; e.water = storeOf(e); }
+  else e.water += add;
+}
+function startRent(e, who, isUser, hours, cost, share){
+  e.rent = { who, user: isUser, until: S.t + hours * HOUR, share, hours }; e.rentUn = 0;
+  S.burned += cost * CFG.RENT_BURN;
+  if (e.user && !isUser) { S.wal.irr += cost * CFG.RENT_OWNER; toast(`Irrigator #${e.id} rented for ${hours === 1 ? '1 hour' : hours === 24 ? '1 day' : '1 week'}: +${fmtTok(cost * CFG.RENT_OWNER)} $IRRIGATE`); }
+  S.ver++;
+}
+function endRent(e){
+  if (e.rent.user && e.rentUn > 0) { S.wal.sol += e.rentUn; toast(`Rental of irrigator #${e.id} ended. ${fmtSol(e.rentUn)} SOL settled to your wallet.`); }
+  e.rentUn = 0; e.rent = null; S.ver++;
+}
+function step(dm){
+  const t0 = S.t; S.t += dm * 60;
+  S.spot = clamp(S.spot * Math.exp(0.015 * gauss() * Math.sqrt(dm)) + (1200 + 250 * Math.sin(S.t / (7 * HOUR)) - S.spot) * 0.01 * dm, 500, 2600);
+  if (Math.floor(S.t / 600) !== Math.floor(t0 / 600)) { S.spark.push(S.spot); if (S.spark.length > 72) S.spark.shift(); }
+  if (S.irr.length < CFG.SUPPLY && Math.random() < dm * CFG.OTHER_RATE) { addOther(Math.random); S.ver++; }
+  for (const e of S.irr) {
+    if (e.rent && S.t >= e.rent.until) endRent(e);
+    if (e.list && !e.rent && Math.random() < dm / 1100 * Math.max(0.05, Math.min(3, fair(e, e.list.share) / e.list.price))) { const x = Math.random(), d = DURS[x < 0.5 ? 0 : x < 0.9 ? 1 : 2]; startRent(e, randAddr(Math.random), false, d.h, e.list.price * d.h * (1 - d.off), e.list.share); }
+    const g = genOf(e) * dm / 60 * (0.8 + 0.4 * Math.random()); S.wGen += g; addWater(e, g);
+    if (!opIsUser(e) && !TIERS[e.tier].auto) { for (const c of cropsOf(e)) if (c.w < 30 && Math.random() < dm / 150) waterCrop(e, c); while (plant(e)) {} }
+    else if (autoOn(e)) { for (const c of cropsOf(e)) if (c.w < CFG.AUTO_AT) waterCrop(e, c); while (plant(e)) {} }
+  }
+  for (const n of S.nets) {
+    const members = S.irr.filter(e => e.net === n.id);
+    const dry = S.coins.filter(c => c.alive && c.w < 25 && members.some(e => e.id === c.irr)).sort((a, b) => a.w - b.w);
+    for (const c of dry) { const need = 100 - c.w; if (n.pool < need) break; n.pool -= need; c.w = 100; n.saved++; const e = eById.get(c.irr); if (e && opIsUser(e) && S.speed <= 60) toast(`${n.name} watered your dry crop $${c.tick}`); }
+  }
+  S.fee24 *= Math.exp(-dm * 60 / DAY);
+  for (const c of S.coins) {
+    if (!c.alive) continue;
+    const e = eById.get(c.irr), drain = CFG.DRAIN_H * dm / 60 * (e ? TIERS[e.tier].eff : 1);
+    const wet = c.w > 0;
+    c.w = Math.max(0, c.w - drain);
+    const a0 = c.age, a1 = c.age + dm * (wet ? 0.8 : 1.3); c.age = a1;
+    const fee = c.F * (Math.exp(-a0 / c.L) - Math.exp(-a1 / c.L)) * (wet ? 1 : 0.55);
+    if (fee > 0) pay(c, fee);
+    if (!c.grad && c.gradAt > 0 && c.fees >= c.gradAt) { c.grad = true; S.ver++; }
+    if (a1 > 3 * c.L) { c.alive = false; if (e) e.live = Math.max(0, e.live - 1); S.ver++; }
+  }
+  const decay = Math.exp(-dm * 60 / (7 * DAY)); for (const e of S.irr) e.rv *= decay;
+  if (Math.floor(S.t / HOUR) !== Math.floor(t0 / HOUR)) {
+    S.coins = S.coins.filter(c => c.alive || c.grad || c.t0 > S.t - 10 * HOUR || eById.get(c.irr)?.user);
+    for (const e of S.irr) if (e.list && !e.user) e.list.price = r50(fair(e, e.list.share) * e.list.k);
+  }
+}
+function advance(minutes){ while (minutes > 0) { const d = Math.min(5, minutes); step(d); minutes -= d; } }
+function newWorld(){
+  S = { v: 1, t: CFG.START_T - 2 * DAY, speed: 60, irr: [], coins: [], feed: [], burned: 0, burnSol: 0, ops: 0, launches: 0, wGen: 0, wUsed: 0, wSold: 0, fee24: 0, spot: 1200, spark: [],
+    nets: NETS.map(n => ({ id: n.id, pool: 0, contrib: 0, saved: 0 })), wal: { sol: 30, irr: 250000 }, nextCoin: 1, ver: 0 };
+  eById = new Map();
+  const r = mulberry(151);
+  for (let i = 0; i < 36; i++) addOther(r);
+  advance(2 * 24 * 60);
+  S.feed = S.feed.slice(0, 40);
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function load(){
+  try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 1 && Array.isArray(s.irr)) { S = s; reindex(); return; } } } catch (e) {}
+  newWorld();
+}
+
+/* ---------- wallet (Wallet Standard + injected providers, validated with @solana/web3.js) ---------- */
+const W = { list: [], addr: null, name: null, entry: null, kind: null, balance: null };
+const isMine = e => !!(e && e.user && W.addr && e.owner === W.addr);
+const isRenting = e => !!(e && e.rent && e.rent.user && W.addr && e.rent.who === W.addr);
+function addWallet(x){ if (!W.list.some(w => w.name.toLowerCase() === x.name.toLowerCase())) W.list.push(x); }
+const wsApi = { register: (...ws) => { ws.forEach(w => { try { if (w.features && w.features['standard:connect'] && (w.chains || []).some(c => String(c).startsWith('solana:'))) addWallet({ name: w.name, icon: w.icon, kind: 'standard', w }); } catch (e) {} }); return () => {}; } };
+try {
+  window.addEventListener('wallet-standard:register-wallet', ev => { try { ev.detail(wsApi); } catch (e) {} });
+  window.dispatchEvent(new CustomEvent('wallet-standard:app-ready', { detail: wsApi }));
+} catch (e) {}
+function detectInjected(){
+  const c = [['Phantom', window.phantom && window.phantom.solana], ['Solflare', window.solflare], ['Backpack', window.backpack], ['Solana wallet', window.solana]];
+  for (const [n, p] of c) {
+    if (!p || typeof p.connect !== 'function') continue;
+    const name = p.isPhantom ? 'Phantom' : p.isSolflare ? 'Solflare' : n;
+    if (!W.list.some(w => w.name.toLowerCase().startsWith(name.toLowerCase()))) addWallet({ name, icon: null, kind: 'injected', p });
+  }
+}
+function validAddr(a){
+  try { if (window.solanaWeb3 && solanaWeb3.PublicKey) return new solanaWeb3.PublicKey(a).toBase58(); } catch (e) { return null; }
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a) ? a : null;
+}
+async function connectEntry(entry, silent){
+  let addr = null;
+  if (entry.kind === 'standard') {
+    const w = entry.w;
+    if (silent) { if (w.accounts && w.accounts.length) addr = w.accounts[0].address; else return false; }
+    else { const r = await w.features['standard:connect'].connect(); const acc = (r && r.accounts && r.accounts.length ? r.accounts : w.accounts)[0]; addr = acc && acc.address; }
+    try { w.features['standard:events'] && w.features['standard:events'].on('change', ({ accounts }) => { if (accounts && accounts.length) setWallet(accounts[0].address, entry); else clearWallet(); }); } catch (e) {}
+  } else {
+    const p = entry.p;
+    const r = await p.connect(silent ? { onlyIfTrusted: true } : undefined);
+    const pk = (r && r.publicKey) || p.publicKey; addr = pk && pk.toString();
+    try { p.on && p.on('accountChanged', pk => { if (pk) setWallet(pk.toString(), entry); else clearWallet(); }); } catch (e) {}
+  }
+  if (!addr) throw new Error('The wallet returned no account.');
+  setWallet(addr, entry);
+  return true;
+}
+function setWallet(addr, entry){
+  const ok = validAddr(addr);
+  if (!ok) { toast('That wallet returned an invalid Solana address.'); return; }
+  W.addr = ok; W.name = entry ? entry.name : 'Guest wallet'; W.entry = entry || null; W.kind = entry ? entry.kind : 'guest'; W.balance = null;
+  try { localStorage.setItem(KEYW, JSON.stringify({ name: W.name, kind: W.kind, addr: W.kind === 'guest' ? W.addr : null })); } catch (e) {}
+  for (const e of S.irr) { if (e.user) e.owner = W.addr; if (e.rent && e.rent.user) e.rent.who = W.addr; }
+  paintWallet(); S.ver++; render(true);
+  if (W.kind !== 'guest') fetchBalance();
+}
+async function fetchBalance(){
+  if (!window.solanaWeb3 || !W.addr) return;
+  try {
+    const conn = new solanaWeb3.Connection(CFG.RPC, 'confirmed');
+    const lamports = await Promise.race([conn.getBalance(new solanaWeb3.PublicKey(W.addr)), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000))]);
+    W.balance = lamports / solanaWeb3.LAMPORTS_PER_SOL;
+  } catch (e) { W.balance = 'unavailable'; }
+  paintWallet();
+}
+async function clearWallet(){
+  const e = W.entry;
+  try { if (e && e.kind === 'standard' && e.w.features['standard:disconnect']) await e.w.features['standard:disconnect'].disconnect(); if (e && e.kind === 'injected' && e.p.disconnect) await e.p.disconnect(); } catch (err) {}
+  Object.assign(W, { addr: null, name: null, entry: null, kind: null, balance: null });
+  try { localStorage.removeItem(KEYW); } catch (err) {}
+  $('#walletMenu').hidden = true; paintWallet(); S.ver++; render(true);
+}
+function paintWallet(){
+  const b = $('#walletBtn');
+  if (W.addr) { b.className = 'btn connected'; b.innerHTML = `<i class="dot"></i><span>${short(W.addr)}</span>`; b.setAttribute('aria-label', `Wallet ${W.addr}, open menu`); }
+  else { b.className = 'btn cy'; b.innerHTML = `<i class="dot"></i><span>Connect wallet</span>`; b.setAttribute('aria-label', 'Connect wallet'); }
+  if (W.addr) {
+    const bal = W.kind === 'guest' ? fmtSol(S.wal.sol) + ' SOL' : W.balance == null ? 'Checking…' : W.balance === 'unavailable' ? 'Unavailable' : fmtSol(W.balance) + ' SOL';
+    $('#walletMenu').innerHTML = `<div class="rows"><div><label>Wallet</label><b>${esc(W.name)}</b></div><div><label>Address</label><b>${short(W.addr)}</b></div><div><label>Balance</label><b>${bal}</b></div><div><label>$IRRIGATE</label><b>${fmtTok(S.wal.irr)}</b></div></div>
+      <div class="mitems"><button data-act="copyAddr">Copy address</button>${W.kind !== 'guest' ? `<a href="https://solscan.io/account/${W.addr}" target="_blank" rel="noopener">View on Solscan</a>` : ''}<button data-act="disconnect">Disconnect</button></div>`;
+  }
+}
+function openWalletModal(){
+  detectInjected();
+  const items = W.list.map((w, i) => `<button class="wopt" data-act="pickWallet" data-i="${i}">${w.icon ? `<img src="${esc(w.icon)}" alt="">` : `<span class="ph-ico"></span>`}<span>${esc(w.name)}</span><em>Detected</em></button>`).join('');
+  modal(`<section class="panel modal" role="dialog" aria-modal="true" aria-labelledby="wt">
+    <h2 class="ph" id="wt">${ICO.mine} Connect a Solana wallet <button class="x" data-act="close" aria-label="Close">×</button></h2>
+    <div class="wlist">
+      ${items || `<p class="small" style="margin:0">No Solana wallet found in this browser. Install one, then reload this page.</p>
+        <a class="wopt" href="https://phantom.app/download" target="_blank" rel="noopener"><span class="ph-ico"></span>Get Phantom</a>
+        <a class="wopt" href="https://solflare.com/download" target="_blank" rel="noopener"><span class="ph-ico"></span>Get Solflare</a>
+        <a class="wopt" href="https://backpack.app/downloads" target="_blank" rel="noopener"><span class="ph-ico"></span>Get Backpack</a>`}
+      <button class="wopt" data-act="guestWallet"><span class="ph-ico" style="background:var(--cy)"></span><span>Continue as guest</span></button>
+      <p class="small" style="margin:4px 0 0">Connecting shares your public address only.</p>
+    </div></section>`);
+}
+async function eagerConnect(){
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(KEYW) || 'null'); } catch (e) {}
+  if (!saved) return;
+  if (saved.kind === 'guest' && saved.addr) { setWallet(saved.addr, null); return; }
+  detectInjected();
+  const entry = W.list.find(w => w.name === saved.name);
+  if (entry) { try { await connectEntry(entry, true); } catch (e) {} }
+}
+
+/* ---------- the pivot field ---------- */
+const plotCol = c => !c ? 'var(--field)' : c.w <= 0 ? '#8B6A3E' : c.w < 45 ? '#A7A94A' : c.w < 80 ? '#5CB043' : '#2E9B3E';
+function sector(cx, cy, r0, r1, a0, a1){
+  const p = (r, a) => `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`;
+  return `M ${p(r0, a0)} L ${p(r1, a0)} A ${r1} ${r1} 0 0 1 ${p(r1, a1)} L ${p(r0, a1)} A ${r0} ${r0} 0 0 0 ${p(r0, a0)} Z`;
+}
+function fieldSVG(){
+  const crops = S.coins.filter(c => c.alive).sort((a, b) => ((a.id * 2654435761) >>> 0) % 997 - ((b.id * 2654435761) >>> 0) % 997).slice(0, 36);
+  const rings = [[22, 48], [48, 74], [74, 100]];
+  let s = `<svg class="field" viewBox="0 0 220 220" role="img" aria-label="A center-pivot field: each plot is a token crop coloured by its water level.">`;
+  s += `<circle cx="110" cy="110" r="104" style="fill:var(--field)"/>`;
+  let i = 0;
+  rings.forEach(([r0, r1]) => { for (let k = 0; k < 12; k++) { const a0 = k / 12 * 2 * Math.PI - Math.PI / 2, a1 = (k + 1) / 12 * 2 * Math.PI - Math.PI / 2, c = crops[i++]; s += `<path class="p" d="${sector(110, 110, r0, r1, a0, a1)}" style="fill:${plotCol(c)}">${c ? `<title>$${esc(c.tick)}: ${stageOf(c).toLowerCase()}, ${Math.round(c.w)}% water${c.w <= 0 ? ', dormant' : ''}</title>` : '<title>Empty plot</title>'}</path>`; } });
+  s += `<g class="arm"><rect x="108.5" y="10" width="3" height="100" fill="#EEEEEC" stroke="#191919" stroke-width=".6"/>`;
+  for (let k = 0; k < 6; k++) { const y = 20 + k * 15; s += `<rect x="104" y="${y}" width="2" height="2" fill="#1ECDE1"/><rect x="114" y="${y + 3}" width="2" height="2" fill="#96EBF5"/><rect x="101" y="${y + 6}" width="2" height="2" fill="#96EBF5"/><rect x="117" y="${y + 8}" width="2" height="2" fill="#1ECDE1"/>`; }
+  s += `<rect x="105" y="6" width="10" height="6" fill="#191919"/></g>`;
+  s += `<circle cx="110" cy="110" r="10" fill="#EEEEEC" stroke="#191919" stroke-width="1.5"/><circle cx="110" cy="110" r="4" fill="#1ECDE1"/>`;
+  return s + '</svg>';
+}
+function featuredCrop(){
+  const mine = W.addr ? S.coins.filter(c => c.alive && opLabs().some(e => e.id === c.irr)) : [];
+  if (mine.length) return mine[Math.floor(S.t / 600) % mine.length];
+  const live = S.coins.filter(c => c.alive);
+  return live.length ? live[Math.floor(S.t / 900) % live.length] : null;
+}
+function simHTML(c){
+  if (!c) return `<div class="sim"><h3>No crops yet</h3></div>`;
+  const st = stageOf(c), order = ['Seed', 'Sprout', 'Growing', 'Mature'];
+  return `<div class="sim"><label>Virtual farm simulator</label><h3>$${esc(c.tick)}</h3><p class="sub">Irrigator #${c.irr} · ${c.w > 0 ? 'growing' : 'dormant, waiting for water'}</p>
+    <label>Crop development</label><div class="stages">${order.map(x => `<div class="${x === st ? 'on' : ''}">${STG[x]}${x}</div>`).join('')}</div>
+    <label>Water supply · ${Math.round(c.w)}%</label><div class="wbar"><i style="width:${c.w.toFixed(0)}%"></i></div><div class="wscale"><span>Drought</span><span>Fully irrigated</span></div>
+    <p class="simnote">Illustrative gameplay mechanic. Water controls virtual crop growth, not actual token performance or earnings.</p></div>`;
+}
+function sparkSVG(){
+  const d = S.spark.length > 1 ? S.spark : [S.spot, S.spot], mn = Math.min(...d) * 0.98, mx = Math.max(...d) * 1.02;
+  const pts = d.map((v, i) => `${(i / (d.length - 1) * 100).toFixed(2)},${(40 - (v - mn) / (mx - mn || 1) * 38 - 1).toFixed(2)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="Water spot price, last 12 hours"><polygon class="ar" points="0,40 ${pts} 100,40"/><polyline class="ln" points="${pts}"/></svg>`;
+}
+
+/* ---------- views ---------- */
+const TABS = [['farm','The farm',ICO.farm],['deploy','Deploy',ICO.deploy],['mine','My farms',ICO.mine],['water','Water market',ICO.water],['networks','Networks',ICO.net],['rentals','Rentals',ICO.rent],['how','How it works',ICO.how],['docs','Docs',ICO.docs]];
+let tab = 'farm';
+const D = { tier: 0 };
+const M = { sort: 'value', dur: 1 };
+const X = { irr: 0, amt: 200 };
+const LST = { id: 0, share: 0.7, mult: 1 };
+const myIrr = () => W.addr ? S.irr.filter(isMine) : [];
+const myRent = () => W.addr ? S.irr.filter(isRenting) : [];
+const opLabs = () => [...myIrr().filter(e => !e.rent), ...myRent()];
+const unTotal = () => myIrr().reduce((a, e) => a + e.unclaimed, 0) + myRent().reduce((a, e) => a + e.rentUn, 0);
+const LIVE = {
+  burned: () => fmtTok(S.burned),
+  live: () => String(S.coins.filter(c => c.alive).length),
+  spot: () => fmtTok(S.spot),
+  w: id => fmtW(eById.get(+id)?.water),
+  un: id => fmtSol(eById.get(+id)?.unclaimed) + ' SOL',
+  rentUn: id => fmtSol(eById.get(+id)?.rentUn) + ' SOL',
+  myUn: () => fmtSol(unTotal()) + ' SOL',
+  claimAll: () => 'Collect all · ' + fmtSol(unTotal()) + ' SOL',
+  stored: () => fmtW(S.irr.reduce((a, e) => a + e.water, 0)),
+  ago: t => ago(+t),
+  left: t => left(+t)
+};
+function kv(label, val, k){ return `<div><label>${label}</label><b${k ? ` data-k="${k}"` : ''}>${val}</b></div>`; }
+
+let latestSnap = null, latestAt = 0, featId = 0;
+function vFarm(){
+  const n = S.irr.length, nowR = performance.now();
+  if (!latestSnap || nowR - latestAt > 30000) { latestSnap = S.feed.filter(f => f.k === 'plant').slice(0, 6); latestAt = nowR; }
+  const live = S.coins.filter(c => c.alive), dorm = live.filter(c => c.w <= 0).length, fc = featuredCrop(); featId = fc ? fc.id : 0;
+  return `<div class="grid-hero"><div class="col">
+  <section class="panel">
+    <h2 class="ph">${ICO.farm} Status <small>the farms right now</small></h2>
+    <div class="pad">
+      <label>Irrigators deployed</label>
+      <div class="big"><b>${n}</b><span>/ ${CFG.SUPPLY.toLocaleString('en-US')}</span></div>
+      <div class="kv4">
+        ${kv('Deploy price', fmtSol(mintPrice(n + 1)) + ' SOL')}
+        ${kv('Crops growing', live.length - dorm)}
+        ${kv('Dormant crops', dorm)}
+        ${kv('$IRRIGATE burned', fmtTok(S.burned), 'burned')}
+      </div>
+      <button class="btn cy wide" data-go="deploy">Deploy an irrigator</button>
+    </div>
+  </section>
+  <section class="panel">
+    <h2 class="ph">${ICO.coin} $IRRIGATE <small>token</small></h2>
+    <div class="kv2"><div><label>Project</label><b>Irrigate</b></div><div><label>Ticker</label><b>$IRRIGATE</b></div></div>
+    ${CFG.X ? `<div class="btnrow"><a class="btn" href="${esc(CFG.X)}" target="_blank" rel="noopener">Follow @IrrigateLive on X</a></div>` : ''}
+  </section>
+  </div>
+  <section class="panel hero">
+    <h2 class="ph">${ICO.water} The pivot field <small>token crops across the network, live</small></h2>
+    <div class="hero-copy">
+      <h1>Supply water. Cultivate tokens. <em>Harvest revenue.</em></h1>
+      <p>Each irrigator is an NFT that waters a virtual token farm. Water plants crops, which launch as coins on pump.fun, and keeps their AI operations running. Creator fees flow back to the irrigator.</p>
+    </div>
+    <div class="farmviz">
+      <div>${fieldSVG()}<div class="legend"><span><i style="background:#2E9B3E"></i>Fully irrigated</span><span><i style="background:#5CB043"></i>Watered</span><span><i style="background:#A7A94A"></i>Thirsty</span><span><i style="background:#8B6A3E"></i>Dormant</span></div></div>
+      <div id="simwrap">${simHTML(fc)}</div>
+    </div>
+    <div class="cycle">
+      <div><label>Water reservoir</label><b data-k="stored">${LIVE.stored()}</b><span>stored across all irrigators</span></div>
+      <div><label>Irrigation</label><b>${fmtW(S.wUsed)}</b><span>distributed to token farms</span></div>
+      <div><label>Cultivation</label><b>${S.launches}</b><span>coins planted so far</span></div>
+      <div><label>Harvest, 24 h</label><b>${fmtSol(S.fee24)} SOL</b><span>creator fees funding more water</span></div>
+    </div>
+  </section>
+  </div>
+  <section class="panel mt">
+    <h2 class="ph">${ICO.docs} Latest plantings <small>crops that just sprouted</small><button class="link end" data-go="water">Water market</button></h2>
+    ${latestSnap.length ? `<div class="feed">${latestSnap.map(x => `<div>${STG.Sprout}<b>$${esc(x.tick)}</b><p>Irrigator #${x.irr}</p><span class="ago" data-k="ago:${x.t}">${ago(x.t)}</span></div>`).join('')}</div>`
+      : `<div class="empty">${irrSVG()}<span>Nothing planted yet.</span></div>`}
+  </section>
+  <section class="panel mt">
+    <h2 class="ph">${ICO.how} How it works <small>six steps</small><button class="link end" data-go="how">All the rules</button></h2>
+    ${stepsHTML()}
+  </section>`;
+}
+function stepsHTML(){
+  const st = [
+    [irrSVG(), 'Deploy an irrigator', 'Buy a virtual irrigation machine, a tradable NFT.'],
+    [STG.Seed, 'Establish farmland', 'Each irrigator connects to plots of virtual farmland, one token crop per plot.'],
+    [ICO.water, 'Generate water', 'It accumulates virtual water over time and from the creator fees its crops earn.'],
+    [STG.Growing, 'Irrigate crops', 'Water plants a crop, which launches as a coin on pump.fun, and keeps its AI agents working.'],
+    [ICO.coin, 'Harvest creator fees', '60% of each coin’s creator fees goes to its irrigator.'],
+    [ICO.net, 'Expand operations', 'Reinvest in bigger irrigators, pumps, tanks and irrigation networks.']
+  ];
+  return `<div class="steps">${st.map((x, i) => `<div>${x[0]}<span class="n">${pad2(i + 1)}</span><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join('')}</div>`;
+}
+
+function vDeploy(){
+  const n = S.irr.length + 1, fee = mintPrice(n), tr = TIERS[D.tier];
+  const shortSol = S.wal.sol < fee, shortT = S.wal.irr < tr.unlock, can = W.addr && n <= CFG.SUPPLY && !shortSol && !shortT;
+  return `<div class="grid-2"><div class="col">
+  <section class="panel step">
+    <h2 class="ph"><b>Step 1</b> <small>choose an irrigation system</small><span class="tag cy end">Now</span></h2>
+    <div class="pad"><h3>How much farmland?</h3>
+      <p>Bigger systems water more crops at once and store more water. From the Center Pivot up, they irrigate and replant on their own.</p>
+      <div class="opts">${TIERS.map((d, i) => `<button class="opt" data-act="pickTier" data-i="${i}" aria-pressed="${D.tier === i}"><span class="drops" aria-hidden="true">${'<i></i>'.repeat(Math.min(d.plots, 8))}</span><b>${d.name}</b><span>${d.cap}</span>
+        <dl><dt>Crops</dt><dd>${d.plots}</dd><dt>Water/h</dt><dd>${d.gen} W</dd><dt>Storage</dt><dd>${d.store} W</dd><dt>Auto</dt><dd>${d.auto ? 'Yes' : 'No'}</dd><dt>Unlock</dt><dd>${d.unlock ? fmtTok(d.unlock) : 'Free'}</dd></dl></button>`).join('')}</div>
+      <p class="note">Water is an in-game resource, not a claim on physical water or guaranteed revenue.</p>
+    </div>
+  </section>
+  <section class="panel step">
+    <h2 class="ph"><b>Step 2</b> <small>${fmtSol(fee)} SOL to deploy</small></h2>
+    <div class="pad"><h3>Deploy irrigator #${Math.min(n, CFG.SUPPLY)}</h3>
+      <p>Half the price buys and burns $IRRIGATE, half funds operations. The system unlock is burned. It ships with ${CFG.PLANT_W + 60} W in the tank, enough to plant your first crop straight away.</p>
+      ${!W.addr ? `<button class="btn dark" data-act="wallet">Connect wallet to deploy</button>`
+        : `<button class="btn dark" data-act="deploy" ${can ? '' : 'disabled'}>Deploy ${tr.name}</button>${shortSol ? `<p class="warn" style="margin:12px 0 0">Not enough SOL in your wallet.</p>` : ''}${shortT ? `<p class="warn" style="margin:12px 0 0">You need ${fmtTok(tr.unlock)} $IRRIGATE for a ${tr.name}.</p>` : ''}`}
+    </div>
+  </section></div>
+  <aside class="col">
+    <section class="panel"><h2 class="ph">${ICO.deploy} You get <small>after step 2</small></h2>
+      <div class="youget">${irrArt({ tier: D.tier })}<div><b>${tr.name.split(' ')[0]}</b><span>${tr.name}<br>${tr.plots} crop plot${tr.plots > 1 ? 's' : ''}, ${tr.gen} W/h</span></div></div>
+    </section>
+    <section class="panel"><h2 class="ph">${ICO.coin} Summary <small>what moves</small></h2>
+      <div class="rows">
+        ${kv('Deploy price', fmtSol(fee) + ' SOL')}
+        ${kv('System unlock (burned)', tr.unlock ? fmtTok(tr.unlock) + ' $IRRIGATE' : 'Free')}
+        ${kv('Water to plant a crop', CFG.PLANT_W + ' W')}
+        ${kv('Your share of fees', '60%')}
+        ${kv('Wallet $IRRIGATE', fmtTok(S.wal.irr))}
+      </div>
+    </section>
+  </aside></div>`;
+}
+
+function upRow(e, k){
+  const u = UP[k], l = e[k], max = l >= u.max, cost = u.cost(l);
+  return `<div class="up"><b>${u.name}<span class="pips">${Array.from({ length: u.max }, (_, i) => `<i class="${i < l ? 'on' : ''}"></i>`).join('')}</span></b><small>${max ? 'Maxed out' : u.eff}</small><button class="btn sm" data-act="upgrade" data-id="${e.id}" data-k="${k}" ${max || S.wal.irr < cost ? 'disabled' : ''}>${max ? 'Maxed' : 'Upgrade · ' + fmtTok(cost)}</button></div>`;
+}
+function plotsHTML(e){
+  const crops = cropsOf(e), op = isMine(e) && !e.rent || isRenting(e);
+  return `<div class="plots">${Array.from({ length: plotsOf(e) }, (_, i) => {
+    const c = crops[i];
+    if (!c) return `<div class="plot"><div class="ptop">${STG.Seed}<b>Plot ${i + 1}</b></div><small>Empty farmland</small>${op ? `<div class="btns"><button class="btn sm cy" data-act="plant" data-id="${e.id}" ${e.water >= CFG.PLANT_W ? '' : 'disabled'}>Plant · ${CFG.PLANT_W} W</button></div>` : ''}</div>`;
+    const need = Math.ceil((100 - c.w) * TIERS[e.tier].eff);
+    return `<div class="plot${c.w <= 0 ? ' dorm' : ''}"><div class="ptop">${STG[stageOf(c)]}<b>$${esc(c.tick)}</b></div><small>${stageOf(c)} · ${c.w <= 0 ? 'dormant' : Math.round(c.w) + '% water'} · ${fmtSol(c.fees)} SOL fees</small><div class="wbar" style="height:10px;margin:2px 0"><i style="width:${c.w.toFixed(0)}%"></i></div>${op ? `<div class="btns"><button class="btn sm" data-act="waterOne" data-id="${e.id}" data-c="${c.id}" ${need > 0 && e.water >= need ? '' : 'disabled'}>Irrigate · ${need} W</button></div>` : ''}</div>`;
+  }).join('')}</div>`;
+}
+function vMine(){
+  if (!W.addr) return `<section class="panel"><h2 class="ph">${ICO.mine} My farms</h2>
+    <div class="empty">${irrSVG()}<span>Connect a wallet to see your irrigators and crops.</span><button class="btn cy" data-act="wallet">Connect wallet</button></div></section>`;
+  const mine = myIrr(), rented = myRent(), all = [...mine, ...rented];
+  return `<section class="panel"><h2 class="ph">${ICO.mine} My farms <small>harvests wait until you collect them</small></h2>
+    <div class="kv5">
+      <div><label>Irrigators</label><b>${mine.length}${rented.length ? ' + ' + rented.length + ' rented' : ''}</b></div>
+      <div><label>Water stored</label><b>${fmtW(opLabs().reduce((a, e) => a + e.water, 0))}</b></div>
+      <div><label>Crops growing</label><b>${all.reduce((a, e) => a + cropsOf(e).filter(c => c.w > 0).length, 0)}</b></div>
+      <div><label>Ready to collect</label><b class="g" data-k="myUn">${LIVE.myUn()}</b></div>
+      <div><label>$IRRIGATE</label><b>${fmtTok(S.wal.irr)}</b></div>
+    </div>
+    <div class="actions">
+      <button class="btn cy" data-act="claimAll" data-k="claimAll">${LIVE.claimAll()}</button>
+      <button class="btn" data-go="water">Buy or sell water</button>
+      <button class="btn" data-go="deploy">Deploy an irrigator</button>
+      <button class="btn" data-act="buyIrr" ${S.wal.sol < 1 ? 'disabled' : ''}>Swap 1 SOL for $IRRIGATE</button>
+    </div>
+  </section>
+  ${all.length ? `<section class="panel mt"><h2 class="ph">${ICO.farm} Your irrigators</h2>
+    ${all.map(e => { const nx = TIERS[e.tier + 1], mineE = isMine(e), f = Math.min(1, e.water / storeOf(e));
+      return `<div class="frow"><div class="fhead"><div>${irrArt(e)}</div>
+      <div><h3>#${e.id} <span class="tag ghost">${TIERS[e.tier].name}</span>${e.net ? `<span class="tag cy">${NETS[e.net - 1].name}</span>` : ''}${isRenting(e) ? `<span class="tag lime">Rented, ${left(e.rent.until)} left</span>` : ''}</h3>
+        <label>Reservoir</label><div class="tankbar" aria-hidden="true"><i style="width:${(f * 100).toFixed(1)}%"></i></div><span class="small" data-k="w:${e.id}">${LIVE.w(e.id)}</span><span class="small"> of ${fmtW(storeOf(e))} · ${Math.round(genOf(e))} W/h${e.net ? ', 20% to the network' : ''}</span>
+        <div class="stats"><div><label>Plots planted</label><b>${e.live} / ${plotsOf(e)}</b></div><div><label>Crops harvested</label><b>${e.count}</b></div><div><label>${mineE ? 'Ready to collect' : 'Your share'}</label><b data-k="${mineE ? 'un' : 'rentUn'}:${e.id}">${mineE ? LIVE.un(e.id) : LIVE.rentUn(e.id)}</b></div><div><label>Water efficiency</label><b>${Math.round((1 - TIERS[e.tier].eff) * 100)}% saved</b></div></div>
+        <div class="btns"><button class="btn sm cy" data-act="waterAll" data-id="${e.id}">Irrigate all</button>${mineE ? `<button class="btn sm" data-act="claim" data-id="${e.id}">Collect</button>` : ''}</div></div>
+      <div>${mineE ? `<div class="rentbox">${e.rent ? `<b>Rented out</b><p>To ${short(e.rent.who)} for ${left(e.rent.until)} more. They keep ${Math.round(e.rent.share * 100)}% of the operator share.</p>`
+          : e.list ? `<b>Listed for rent</b><p>${fmtTok(e.list.price)} $IRRIGATE an hour, operator keeps ${Math.round(e.list.share * 100)}%.</p><div class="btns"><button class="btn sm" data-act="listOpen" data-id="${e.id}">Edit</button><button class="btn sm" data-act="unlist" data-id="${e.id}">Unlist</button></div>`
+          : `<b>Not listed</b><p>Rent this irrigator to farm operators for $IRRIGATE and a share of creator fees.</p><button class="btn sm cy" data-act="listOpen" data-id="${e.id}">List for rent</button>`}</div>
+        ${TIERS[e.tier].auto ? `<div class="up"><b>Automated irrigation</b><small>${e.autoOn !== false ? `Waters crops below ${CFG.AUTO_AT}% and replants empty plots.` : 'Off: you water and plant by hand.'}</small><div class="seg"><button class="chip" data-act="setAuto" data-id="${e.id}" data-v="1" aria-pressed="${e.autoOn !== false}">On</button><button class="chip" data-act="setAuto" data-id="${e.id}" data-v="0" aria-pressed="${e.autoOn === false}">Off</button></div></div>` : ''}
+        <div class="up"><b>Irrigation network</b><small>${e.net ? 'Connected to ' + NETS[e.net - 1].name + '.' : 'Not connected.'}</small><div class="seg">${[0, 1, 2, 3].map(g => `<button class="chip" data-act="setNet" data-id="${e.id}" data-g="${g}" aria-pressed="${(e.net || 0) === g}">${g ? NETS[g - 1].name.split(' ')[0] : 'None'}</button>`).join('')}</div></div>
+        ${nx ? `<div class="up"><b>Upgrade to ${nx.name}</b><small>${nx.plots} crops · ${nx.cap.toLowerCase()}</small><button class="btn sm" data-act="tierUp" data-id="${e.id}" ${S.wal.irr < nx.unlock - TIERS[e.tier].unlock ? 'disabled' : ''}>Unlock · ${fmtTok(nx.unlock - TIERS[e.tier].unlock)}</button></div>` : ''}
+        ${upRow(e, 'pump')}${upRow(e, 'tank')}` : `<p class="small" style="margin:0">Owner ${short(e.owner)} keeps the rest of the operator share and the rental payment.</p>`}</div></div>
+      ${plotsHTML(e)}</div>`; }).join('')}
+  </section>` : `<section class="panel mt"><div class="empty">${irrSVG()}<span>No irrigators yet. Deploy one or rent one.</span><button class="btn sm cy" data-go="deploy">Deploy an irrigator</button></div></section>`}`;
+}
+
+function vWater(){
+  const ops = opLabs();
+  if (!X.irr || !ops.find(e => e.id === X.irr)) X.irr = ops[0]?.id || 0;
+  const e = eById.get(X.irr), buy = X.amt / 100 * S.spot * (1 + CFG.EX_SPREAD), sell = X.amt / 100 * S.spot * (1 - CFG.EX_SPREAD);
+  return `<section class="panel"><h2 class="ph">${ICO.water} Water market <small>sell unused water or buy more</small></h2>
+    <div class="ex">
+      <div class="spot"><label>Spot price</label><b data-k="spot">${LIVE.spot()}</b><span>$IRRIGATE per 100 W · last 12 hours</span>${sparkSVG()}
+        <p class="small" style="margin:14px 0 0">Water sold by suppliers so far: ${fmtW(S.wSold)}. A 2% spread on every trade is burned.</p></div>
+      <div>${!W.addr ? `<div class="empty" style="padding:0">${irrSVG()}<span>Connect a wallet to trade water.</span><button class="btn cy" data-act="wallet">Connect wallet</button></div>`
+        : !ops.length ? `<div class="empty" style="padding:0">${irrSVG()}<span>Water is stored in irrigators. Deploy or rent one to trade.</span><button class="btn cy" data-go="deploy">Deploy an irrigator</button></div>`
+        : `<label>Irrigator</label><div class="seg">${ops.map(o => `<button class="chip" data-act="xIrr" data-id="${o.id}" aria-pressed="${X.irr === o.id}">#${o.id} · ${fmtW(o.water)}</button>`).join('')}</div>
+          <label style="margin-top:12px">Amount</label><div class="seg">${[100, 200, 500, 1000].map(a => `<button class="chip" data-act="xAmt" data-v="${a}" aria-pressed="${X.amt === a}">${a} W</button>`).join('')}</div>
+          <div class="rows" style="border:1px solid var(--rule);margin:14px 0">${kv('Buy ' + X.amt + ' W', fmtTok(buy) + ' $IRRIGATE')}${kv('Sell ' + X.amt + ' W', fmtTok(sell) + ' $IRRIGATE')}${kv('Room in tank', fmtW(storeOf(e) - e.water))}</div>
+          <div class="btns"><button class="btn cy" data-act="xBuy" ${S.wal.irr < buy || storeOf(e) - e.water < X.amt ? 'disabled' : ''}>Buy ${X.amt} W</button><button class="btn" data-act="xSell" ${e.water < X.amt ? 'disabled' : ''}>Sell ${X.amt} W</button></div>`}</div>
+    </div>
+  </section>`;
+}
+
+function vNetworks(){
+  const mine = myIrr();
+  return `<section class="panel"><h2 class="ph">${ICO.net} Autonomous irrigation networks <small>interconnected water between farms</small></h2>
+    <div class="pbody"><p>An irrigator connected to a network sends 20% of the water it generates, plus any overflow when its tank is full, to the network reservoir. The reservoir automatically waters the driest crops of every member, so a farm on the network rarely goes dormant.</p></div>
+    <div class="nets" style="border-top:1px solid var(--rule)">${NETS.map((n, i) => { const st = S.nets[i], members = S.irr.filter(e => e.net === n.id);
+      return `<div class="net"><h3>${n.name}</h3><dl><dt>Irrigators</dt><dd>${members.length}</dd><dt>Reservoir</dt><dd>${fmtW(st.pool)}</dd><dt>Crops rescued</dt><dd>${st.saved}</dd><dt>Crops on the network</dt><dd>${S.coins.filter(c => c.alive && members.some(e => e.id === c.irr)).length}</dd></dl></div>`; }).join('')}</div>
+  </section>
+  <section class="panel mt"><h2 class="ph">${ICO.farm} Connect your irrigators</h2>
+    ${!W.addr ? `<div class="empty">${irrSVG()}<span>Connect a wallet to join a network.</span><button class="btn cy" data-act="wallet">Connect wallet</button></div>`
+      : mine.length ? mine.map(e => `<div class="frow"><div class="fhead" style="grid-template-columns:150px minmax(0,1fr)"><div>${irrArt(e)}</div><div><h3>#${e.id} <span class="tag ghost">${TIERS[e.tier].name}</span></h3><p class="small" style="margin:0 0 12px">${e.net ? `Connected to ${NETS[e.net - 1].name}. Contributed ${fmtW(e.netC || 0)} so far.` : 'Not connected. All its water stays in its own tank.'}</p><div class="seg">${[0, 1, 2, 3].map(g => `<button class="chip" data-act="setNet" data-id="${e.id}" data-g="${g}" aria-pressed="${(e.net || 0) === g}">${g ? NETS[g - 1].name : 'No network'}</button>`).join('')}</div></div></div></div>`).join('')
+      : `<div class="empty">${irrSVG()}<span>You don’t own an irrigator yet.</span><button class="btn sm cy" data-go="deploy">Deploy an irrigator</button></div>`}
+  </section>`;
+}
+
+function vRentals(){
+  const d = DURS[M.dur], list = S.irr.filter(e => e.list);
+  list.sort((a, b) => (!!a.rent - !!b.rent) || (M.sort === 'price' ? a.list.price - b.list.price : M.sort === 'tier' ? b.tier - a.tier : (b.list.share * hourly(b) / b.list.price) - (a.list.share * hourly(a) / a.list.price)));
+  const segb = (key, val, label) => `<button class="chip" data-act="m" data-key="${key}" data-val="${val}" aria-pressed="${String(M[key]) === String(val)}">${label}</button>`;
+  return `<section class="panel"><h2 class="ph">${ICO.rent} Irrigators for rent <small>${list.length} listed · farm without buying equipment</small></h2>
+    <div class="filters">
+      <div class="seg"><span>Rent for</span>${DURS.map((x, i) => segb('dur', i, x.name + (x.off ? ` (−${x.off * 100}%)` : ''))).join('')}</div>
+      <div class="seg"><span>Sort</span>${segb('sort','value','Best value')}${segb('sort','tier','Biggest')}${segb('sort','price','Price')}</div>
+    </div>
+    ${list.length ? `<div class="lists">${list.map(e => { const cost = e.list.price * d.h * (1 - d.off), mine = isMine(e);
+      return `<div class="lcard">${irrArt(e)}<div><h4>#${e.id}${mine ? '<span class="tag cy">Yours</span>' : ''}</h4>
+        <dl><dt>System</dt><dd>${TIERS[e.tier].name}</dd><dt>Plots</dt><dd>${plotsOf(e)}</dd><dt>Water</dt><dd>${fmtW(e.water)}</dd><dt>Revenue</dt><dd>${fmtSol(hourly(e))} SOL/h</dd><dt>Operator keeps</dt><dd>${Math.round(e.list.share * 100)}%</dd><dt>Price</dt><dd>${fmtTok(e.list.price)} /h</dd></dl>
+        ${e.rent ? `<button class="btn sm" disabled>Rented, back in ${left(e.rent.until)}</button>` : mine ? `<button class="btn sm" data-go="mine">Manage listing</button>`
+          : !W.addr ? `<button class="btn sm" data-act="wallet">Connect wallet</button>`
+          : `<button class="btn sm cy" data-act="rent" data-id="${e.id}" ${S.wal.irr < cost ? 'disabled' : ''}>Rent ${d.name} · ${fmtTok(cost)}</button>`}
+      </div></div>`; }).join('')}</div>` : `<div class="empty">${irrSVG()}<span>No irrigators listed right now.</span></div>`}
+  </section>`;
+}
+function listModal(id){
+  const e = eById.get(+id); if (!isMine(e)) return;
+  if (LST.id !== e.id) { LST.id = e.id; LST.share = e.list ? e.list.share : 0.7; LST.mult = 1; }
+  const p = r50(fair(e, LST.share) * LST.mult);
+  modal(`<section class="panel modal" role="dialog" aria-modal="true" aria-labelledby="lt">
+    <h2 class="ph" id="lt">${ICO.rent} List irrigator #${e.id} for rent <button class="x" data-act="close" aria-label="Close">×</button></h2>
+    <div class="pad">
+      <label>Operator keeps</label>
+      <div class="seg" style="margin-bottom:16px">${[0.5,0.6,0.7,0.8].map(s => `<button class="chip" data-act="lsShare" data-v="${s}" aria-pressed="${LST.share === s}">${s * 100}%</button>`).join('')}</div>
+      <label>Hourly price</label>
+      <div class="seg" style="margin-bottom:16px">${[[0.8,'Fill fast'],[1,'Suggested'],[1.3,'Premium']].map(([m, t]) => `<button class="chip" data-act="lsMult" data-v="${m}" aria-pressed="${LST.mult === m}">${t}</button>`).join('')}</div>
+      <div class="rows" style="border:1px solid var(--rule);margin-bottom:16px">${kv('Price per hour', fmtTok(p) + ' $IRRIGATE')}${kv('You receive', '90% of each payment, plus your fee share')}${kv('Burned', '10% of each payment')}</div>
+      <button class="btn cy wide" data-act="listSave" data-id="${e.id}" data-p="${p}">${e.list ? 'Update listing' : 'List irrigator #' + e.id}</button>
+    </div></section>`);
+}
+
+function vHow(){
+  const sq = Array.from({ length: 100 }, (_, i) => `<i class="${i < 60 ? 'sq-a' : i < 85 ? 'sq-b' : 'sq-c'}"></i>`).join('');
+  return `<section class="panel"><h2 class="ph">${ICO.how} How it works <small>every irrigator is an independent agricultural business</small></h2>${stepsHTML()}</section>
+  <section class="panel mt"><h2 class="ph">${ICO.water} The irrigation cycle</h2>
+    <div class="cycle" style="margin:18px">
+      <div><label>01</label><b>Water reservoir</b><span>Store virtual water generated through protocol activity.</span></div>
+      <div><label>02</label><b>Autonomous irrigation</b><span>Distribute water to connected token farms.</span></div>
+      <div><label>03</label><b>Token cultivation</b><span>Activate AI agents and launch token projects.</span></div>
+      <div><label>04</label><b>Creator fee harvest</b><span>Collect revenue and fund more irrigation.</span></div>
+    </div>
+    <p class="note" style="margin:0 18px 18px">Water is an in-game resource, not a claim on physical water or guaranteed revenue.</p>
+  </section>
+  <div class="two mt">
+    <section class="panel"><h2 class="ph">${ICO.deploy} Irrigation systems</h2>
+      <div class="tw"><table><thead><tr><th>System</th><th>Capability</th><th class="r">Crops</th><th class="r">W/h</th></tr></thead><tbody>${TIERS.map(t => `<tr><td><b>${t.name}</b></td><td>${t.cap}</td><td class="r">${t.plots}</td><td class="r">${t.gen}</td></tr>`).join('')}</tbody></table></div>
+    </section>
+    <section class="panel"><h2 class="ph">${STG.Growing} Crop growth and water demand</h2>
+      <div class="pbody"><p>Every crop needs water: it uses about ${CFG.DRAIN_H}% of its supply an hour. Watered crops keep their AI operations running. A crop that runs dry goes dormant until irrigation resumes.</p>
+      <p>Crops grow from seed to sprout to growing to mature. This is an illustrative gameplay mechanic: water controls virtual crop growth, not actual token performance or earnings.</p></div>
+    </section>
+  </div>
+  <section class="panel mt"><h2 class="ph">${ICO.coin} Where every creator fee goes <small>100 squares, one per percent</small></h2>
+    <div class="split"><div class="squares" aria-hidden="true">${sq}</div></div>
+    <div class="splitkeys">
+      <div><span class="k"><i class="sq-a"></i>The irrigator</span><b>60%</b><p>Its operator. Owners and renters split it at the listed share.</p></div>
+      <div><span class="k"><i class="sq-b"></i>Buy and burn</span><b>25%</b><p>Protocol-funded buybacks and burns of $IRRIGATE.</p></div>
+      <div><span class="k"><i class="sq-c"></i>Operations</span><b>15%</b><p>Pays for the AI agents and the keeper.</p></div>
+    </div>
+  </section>
+  <section class="panel mt"><h2 class="ph">${ICO.rent} Rentals and the water market</h2>
+    <div class="pbody"><p>Owners rent irrigators to farm operators for $IRRIGATE by the hour, day or week, at an agreed share of creator fees; 90% of each payment goes to the owner and 10% is burned. Water suppliers sell excess water on the water market, and farmers buy more when they need it.</p></div>
+  </section>
+  <section class="panel mt"><h2 class="ph">${ICO.farm} The flywheel <small>revenue and buybacks depend on actual trading activity and protocol income</small></h2>
+    <div class="flyline"><span>More irrigators deployed</span><i>→</i><span>More farmland connected</span><i>→</i><span>More crops activated</span><i>→</i><span>More creator fees</span><i>→</i><span>More water and rentals</span><i>→</i><span>More $IRRIGATE spent</span><i>→</i><span class="hot">Buybacks and burns</span></div>
+  </section>`;
+}
+
+const DOCS = [
+  ['overview','Overview', () => `<p>Irrigate is a Solana launchpad of autonomous irrigation machines. Each <strong>irrigator</strong> is an NFT with plots of virtual farmland. Water plants a token crop on a plot, which launches as a coin on pump.fun with the irrigator as creator, and keeps its AI operations running. 60% of each coin’s creator fees goes to the irrigator.</p>`],
+  ['deploying','Deploying', () => `<p>The deploy price rises evenly from 0.25 SOL for #1 to 1.25 SOL for #1,000: <code>0.25 + 1.0 × (n − 1) / 999</code>. Half buys and burns $IRRIGATE, half funds operations. System unlocks are paid in $IRRIGATE and burned.</p>`],
+  ['water','Water', () => `<p>An irrigator generates water at its system’s rate, raised by the pump, plus <code>${CFG.FEE_TO_W.toLocaleString('en-US')} W per SOL</code> of creator fees its crops earn. Planting a crop costs ${CFG.PLANT_W} W. Topping a crop back up costs the water it’s missing, less the system’s efficiency saving. Crops use about ${CFG.DRAIN_H}% of their water an hour and go dormant at zero.</p>
+    <p>Water is an in-game resource, not a claim on physical water or guaranteed revenue.</p>
+    <h4>Launch rules</h4><ul><li>No real people’s names or likeness, and no implied endorsement.</li><li>No existing brands, and no ticker that is already live on pump.fun.</li><li>No promises of returns in any coin or its promotion.</li><li>Every coin description says which irrigator planted it.</li></ul>`],
+  ['networks','Networks', () => `<p>Connected irrigators send 20% of generated water and any tank overflow to their network’s reservoir. The reservoir automatically refills members’ crops that drop below 25%.</p>`],
+  ['market','Water market', () => `<p>Water trades at a spot price in $IRRIGATE per 100 W that moves through the day. Every trade carries a 2% spread, which is burned.</p>`],
+  ['fees','Fees', () => `<div class="tw"><table><thead><tr><th>To</th><th class="r">Share</th></tr></thead><tbody><tr><td>The irrigator’s operator</td><td class="r">60%</td></tr><tr><td>$IRRIGATE buy and burn</td><td class="r">25%</td></tr><tr><td>Operations</td><td class="r">15%</td></tr></tbody></table></div>`],
+  ['rentals','Rentals', () => `<p>Owners list irrigators by the hour, day or week, priced in $IRRIGATE, and choose the operator’s share: 50% to 80%. A day is 10% cheaper per hour, a week 25% cheaper. Each payment settles when the rental starts: 90% to the owner, 10% burned.</p>`],
+  ['token','$IRRIGATE', () => `<p>$IRRIGATE is the pad’s token, launched on pump.fun. It pays for upgrades, unlocks, rentals and water. A defined share of actual protocol revenue funds buybacks and burns.</p>`],
+  ['faq','FAQ', () => [
+      ['Does watering a crop make the coin earn more?','In the game, watered crops keep their AI operations running. It is an illustrative mechanic, not a promise about actual token performance.'],
+      ['Who is the creator of the coins?','The irrigator. Its address is set as the coin’s creator on pump.fun, and the fee split is locked in the same transaction.'],
+      ['What happens to stored water if I sell my irrigator?','It goes with it, along with its crops, history and unclaimed fees.']
+    ].map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('')],
+  ['risks','Risks', () => `<ul><li>Most coins on pump.fun stop trading within days.</li><li>Revenue and buybacks depend on actual trading activity and protocol income.</li><li>pump.fun can change its fee rates or creator fee program at any time.</li><li>Smart contracts and autonomous agents can have bugs even after testing.</li></ul>`]
+];
+function vDocs(){
+  return `<div class="docs"><nav class="panel toc" aria-label="Docs contents"><h2 class="ph">${ICO.docs} Docs <small>contents</small></h2>
+    <ol>${DOCS.map((d, i) => `<li><button data-act="docjump" data-id="${d[0]}"><span>${pad2(i + 1)}</span>${d[1]}</button></li>`).join('')}</ol></nav>
+    <div class="col">${DOCS.map(d => `<section class="panel doc" id="doc-${d[0]}"><h2 class="ph">${d[1]}</h2><div class="body">${d[2]()}</div></section>`).join('')}</div></div>`;
+}
+
+/* ---------- render ---------- */
+let lastVer = -1, lastTab = '', lastRender = 0, lastFull = 0;
+const VIEWS = { farm: vFarm, deploy: vDeploy, mine: vMine, water: vWater, networks: vNetworks, rentals: vRentals, how: vHow, docs: vDocs };
+function render(force){
+  const now = performance.now();
+  const dynamic = !(tab === 'how' || tab === 'docs');
+  if (!force && tab === lastTab && (!dynamic || now - lastRender < 2000)) return;
+  if (!force && tab === 'farm' && now - lastFull < 12000) { lastRender = now; const s = $('#simwrap'); const fc = featuredCrop(); if (s) s.innerHTML = simHTML(fc); return; }
+  if (!force && (tab === 'mine' || tab === 'water') && now - lastFull < 4000) return;
+  if (!force && S.ver === lastVer && tab !== 'mine' && tab !== 'water' && tab !== 'farm') return;
+  lastVer = S.ver; lastTab = tab; lastRender = now; lastFull = now;
+  const y = window.scrollY;
+  $('#view').innerHTML = VIEWS[tab]();
+  window.scrollTo(0, y);
+}
+function paintTabs(){ $('#tabs').innerHTML = TABS.map(([k, label, icon], i) => `<a href="#${k}"${tab === k ? ' aria-current="page"' : ''}>${icon}<span>${label}</span><em>${i + 1}</em></a>`).join(''); }
+function updateLive(){ document.querySelectorAll('[data-k]').forEach(el => { const [k, a] = el.dataset.k.split(':'); const f = LIVE[k]; if (!f) return; const v = f(a); if (el.textContent !== v) el.textContent = v; }); }
+function route(){ const h = location.hash.replace('#', ''); tab = VIEWS[h] ? h : 'farm'; paintTabs(); render(true); updateLive(); }
+
+/* ---------- overlays ---------- */
+let lastFocus = null;
+function modal(html){ if (!$('#overlay').innerHTML) lastFocus = document.activeElement; $('#overlay').innerHTML = `<div class="scrim" data-act="scrim">${html}</div>`; const f = $('#overlay').querySelector('[aria-pressed="true"],button,a'); f && f.focus(); }
+function closeModal(){ $('#overlay').innerHTML = ''; LST.id = 0; lastFocus && lastFocus.focus && lastFocus.focus(); }
+function toast(msg){ const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; const box = $('#toasts'); box.appendChild(t); while (box.children.length > 3) box.firstChild.remove(); setTimeout(() => t.remove(), 3800); }
+
+/* ---------- actions ---------- */
+const after = () => { S.ver++; render(true); updateLive(); };
+const canOp = e => (isMine(e) && !e.rent) || isRenting(e);
+document.addEventListener('click', async ev => {
+  const go = ev.target.closest('[data-go]');
+  if (go) { if ($('#overlay').innerHTML) closeModal(); location.hash = '#' + go.dataset.go; return; }
+  const a = ev.target.closest('[data-act]');
+  if (!a) { if (!ev.target.closest('.walletcell')) $('#walletMenu').hidden = true; return; }
+  const act = a.dataset.act;
+  if (act === 'scrim') { if (ev.target === a) closeModal(); return; }
+  switch (act) {
+    case 'close': closeModal(); break;
+    case 'wallet':
+      if (W.addr && a.id === 'walletBtn') { const m = $('#walletMenu'); paintWallet(); m.hidden = !m.hidden; }
+      else openWalletModal();
+      break;
+    case 'pickWallet': {
+      const entry = W.list[+a.dataset.i];
+      a.disabled = true; const em = a.querySelector('em'); if (em) em.textContent = 'Approve in wallet…';
+      try { await connectEntry(entry, false); closeModal(); toast(`Connected ${short(W.addr)}`); }
+      catch (err) { a.disabled = false; if (em) em.textContent = 'Detected'; toast(err && err.message && /reject|denied|cancel/i.test(err.message) ? 'Connection request was declined in the wallet.' : 'Couldn’t connect. Unlock the wallet and try again.'); }
+      break; }
+    case 'guestWallet': setWallet(randAddr(Math.random), null); closeModal(); toast('Connected as guest'); break;
+    case 'disconnect': clearWallet(); toast('Wallet disconnected'); break;
+    case 'copyAddr': try { await navigator.clipboard.writeText(W.addr); toast('Address copied'); } catch (e) { toast(W.addr); } break;
+    case 'pickTier': D.tier = +a.dataset.i; render(true); break;
+    case 'deploy': {
+      const n = S.irr.length + 1, fee = mintPrice(n), tr = TIERS[D.tier]; if (!W.addr || n > CFG.SUPPLY || S.wal.sol < fee || S.wal.irr < tr.unlock) break;
+      S.wal.sol -= fee; S.wal.irr -= tr.unlock; S.burnSol += fee * 0.5; S.burned += fee * 0.5 / price() + tr.unlock; S.ops += fee * 0.5;
+      const e = { id: n, owner: W.addr, user: true, tier: D.tier, pump: 1, tank: 1, net: null, autoOn: true, water: CFG.PLANT_W + 60, live: 0, count: 0, unclaimed: 0, rentUn: 0, own: 0, rv: 0, list: null, rent: null, t: S.t };
+      S.irr.push(e); eById.set(e.id, e);
+      save(); toast(`Irrigator #${n} is running with ${CFG.PLANT_W + 60} W in the tank. Plant your first crop.`); location.hash = '#mine'; after(); break; }
+    case 'plant': { const e = eById.get(+a.dataset.id); if (!canOp(e)) break; if (!plant(e)) toast('Not enough water or no free plot'); after(); break; }
+    case 'waterOne': { const e = eById.get(+a.dataset.id), c = S.coins.find(x => x.id === +a.dataset.c); if (!canOp(e) || !c) break; if (waterCrop(e, c)) toast(`$${c.tick} is fully irrigated`); after(); break; }
+    case 'waterAll': { const e = eById.get(+a.dataset.id); if (!canOp(e)) break; let n = 0; for (const c of cropsOf(e).sort((x, y) => x.w - y.w)) if (c.w < 100 && waterCrop(e, c)) n++; toast(n ? `Irrigated ${n} crop${n > 1 ? 's' : ''}` : 'Nothing to water, or not enough water'); after(); break; }
+    case 'setAuto': { const e = eById.get(+a.dataset.id); if (!isMine(e)) break; e.autoOn = a.dataset.v === '1'; after(); break; }
+    case 'setNet': { const e = eById.get(+a.dataset.id); if (!isMine(e)) break; const g = +a.dataset.g || null; e.net = g; toast(g ? `Irrigator #${e.id} joined ${NETS[g - 1].name}` : `Irrigator #${e.id} left its network`); after(); break; }
+    case 'claim': { const e = eById.get(+a.dataset.id); if (!isMine(e)) break; const v = e.unclaimed; S.wal.sol += v; e.unclaimed = 0; toast(v > 0 ? `Collected ${fmtSol(v)} SOL` : 'Nothing to collect yet'); after(); break; }
+    case 'claimAll': { let v = 0; for (const e of myIrr()) { v += e.unclaimed; e.unclaimed = 0; } for (const e of myRent()) { v += e.rentUn; e.rentUn = 0; } S.wal.sol += v; toast(v > 0 ? `Collected ${fmtSol(v)} SOL` : 'Nothing to collect yet'); after(); break; }
+    case 'buyIrr': if (S.wal.sol >= 1) { const t = 1 / price(); S.wal.sol -= 1; S.wal.irr += t; toast(`Swapped 1 SOL for ${fmtTok(t)} $IRRIGATE`); after(); } break;
+    case 'upgrade': { const e = eById.get(+a.dataset.id), k = a.dataset.k; if (!isMine(e) || e[k] >= UP[k].max) break; const c = UP[k].cost(e[k]); if (S.wal.irr < c) break; S.wal.irr -= c; S.burned += c; e[k]++; toast(`${UP[k].name} is now level ${e[k]}. ${fmtTok(c)} $IRRIGATE burned.`); after(); break; }
+    case 'tierUp': { const e = eById.get(+a.dataset.id); if (!isMine(e) || e.tier >= 4) break; const c = TIERS[e.tier + 1].unlock - TIERS[e.tier].unlock; if (S.wal.irr < c) break; S.wal.irr -= c; S.burned += c; e.tier++; toast(`Irrigator #${e.id} is now a ${TIERS[e.tier].name}. ${fmtTok(c)} $IRRIGATE burned.`); after(); break; }
+    case 'xIrr': X.irr = +a.dataset.id; render(true); break;
+    case 'xAmt': X.amt = +a.dataset.v; render(true); break;
+    case 'xBuy': { const e = eById.get(X.irr); if (!e) break; const cost = X.amt / 100 * S.spot * (1 + CFG.EX_SPREAD); if (S.wal.irr < cost || storeOf(e) - e.water < X.amt) break; S.wal.irr -= cost; S.burned += X.amt / 100 * S.spot * CFG.EX_SPREAD; e.water += X.amt; toast(`Bought ${X.amt} W for irrigator #${e.id}`); after(); break; }
+    case 'xSell': { const e = eById.get(X.irr); if (!e || e.water < X.amt) break; const got = X.amt / 100 * S.spot * (1 - CFG.EX_SPREAD); e.water -= X.amt; S.wal.irr += got; S.burned += X.amt / 100 * S.spot * CFG.EX_SPREAD; S.wSold += X.amt; toast(`Sold ${X.amt} W for ${fmtTok(got)} $IRRIGATE`); after(); break; }
+    case 'm': M[a.dataset.key] = a.dataset.key === 'dur' ? +a.dataset.val : a.dataset.val; render(true); break;
+    case 'listOpen': LST.id = 0; listModal(a.dataset.id); break;
+    case 'lsShare': LST.share = +a.dataset.v; listModal(LST.id); break;
+    case 'lsMult': LST.mult = +a.dataset.v; listModal(LST.id); break;
+    case 'listSave': { const e = eById.get(+a.dataset.id); if (!isMine(e)) break; e.list = { share: LST.share, price: +a.dataset.p, k: LST.mult }; closeModal(); toast(`Irrigator #${e.id} listed at ${fmtTok(e.list.price)} $IRRIGATE an hour`); after(); break; }
+    case 'unlist': { const e = eById.get(+a.dataset.id); if (!isMine(e)) break; e.list = null; after(); break; }
+    case 'rent': {
+      const e = eById.get(+a.dataset.id), d = DURS[M.dur]; if (!W.addr || !e || !e.list || e.rent || isMine(e)) break;
+      const cost = e.list.price * d.h * (1 - d.off); if (S.wal.irr < cost) break;
+      S.wal.irr -= cost; startRent(e, W.addr, true, d.h, cost, e.list.share);
+      toast(`You’re running irrigator #${e.id} for ${d.name}. You keep ${Math.round(e.list.share * 100)}% of the operator share.`); location.hash = '#mine'; after(); break; }
+    case 'docjump': { const el = document.getElementById('doc-' + a.dataset.id); el && el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); break; }
+  }
+  if (act !== 'wallet' && !a.closest('#walletMenu')) $('#walletMenu').hidden = true;
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if ($('#overlay').innerHTML) closeModal(); $('#walletMenu').hidden = true; } });
+window.addEventListener('hashchange', route);
+
+/* ---------- boot ---------- */
+load();
+S.speed = 60;
+route();
+paintWallet();
+setTimeout(eagerConnect, 500);
+let lastTick = performance.now(), lastSave = 0;
+setInterval(() => {
+  const now = performance.now(), dt = Math.min(2, (now - lastTick) / 1000); lastTick = now;
+  if (S.speed > 0) advance(S.speed * dt / 60);
+  updateLive(); render(false);
+  if (now - lastSave > 5000) { save(); lastSave = now; }
+}, 250);
+window.addEventListener('pagehide', save);
+</script>
+</body>
+</html>
